@@ -1,0 +1,1755 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>A11ySidekick — WCAG 2.2 AA</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ── Kami tokens ── */
+    :root {
+      --bg:             #f5f4ed;
+      --surface:        #faf9f4;
+      --surface-alt:    #eeede4;
+      --accent:         #1B365D;
+      --accent-mid:     #2a4f85;
+      --accent-soft:    #d6dfe8;
+      --ink:            #1a1917;
+      --ink-mid:        #3d3c38;
+      --ink-mute:       #7a7870;
+      --border:         #d9d8d0;
+      --border-soft:    #e8e7df;
+      --do:             #1a4a2e;
+      --do-bg:          #eef6f1;
+      --do-border:      #b3d4bf;
+      --dont:           #5c1c1c;
+      --dont-bg:        #fdf0ef;
+      --dont-border:    #e8b4b0;
+      --doc-bg:         #f5f0e8;
+      --doc-border:     #d4c4a0;
+      --doc-ink:        #5a4a28;
+      --new-bg:         #f0f4fa;
+      --new-border:     #a8bcd8;
+      --new-ink:        #1B365D;
+      --split-bg:       #f8f4ff;
+      --split-border:   #c4aee8;
+      --split-ink:      #4a2a7a;
+      --impl-bg:        #f0f4f0;
+      --impl-border:    #a8c4a8;
+      --impl-ink:       #2a4a2a;
+      --shadow-ring:    0 0 0 1px rgba(27,54,93,0.07), 0 2px 8px rgba(27,54,93,0.06);
+      --shadow-whisper: 0 1px 3px rgba(26,25,23,0.05);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-size: 16px; -webkit-font-smoothing: antialiased; }
+
+    body {
+      background: var(--bg);
+      color: var(--ink);
+      font-family: 'Inter', sans-serif;
+      font-weight: 400;
+      line-height: 1.55;
+      min-height: 100vh;
+    }
+
+    /* ── Layout ── */
+    .page {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 56px 32px 96px;
+    }
+
+    /* ── Page header ── */
+    .page-header {
+      margin-bottom: 40px;
+      padding-bottom: 36px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .page-header .eyebrow {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--ink-mute);
+      margin-bottom: 12px;
+    }
+
+    .page-header h1 {
+      font-family: 'Newsreader', serif;
+      font-size: 40px;
+      font-weight: 500;
+      line-height: 1.1;
+      color: var(--accent);
+      margin-bottom: 14px;
+    }
+
+    .page-header .subtitle {
+      font-size: 14px;
+      color: var(--ink-mid);
+      line-height: 1.6;
+      max-width: 560px;
+    }
+
+    .meta-row {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+
+    .meta-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 4px 12px;
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--ink-mid);
+      box-shadow: var(--shadow-whisper);
+    }
+
+    .meta-pill .dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--accent);
+      opacity: 0.45;
+    }
+
+    /* ── Tab bar ── */
+    .tab-bar {
+      display: flex;
+      gap: 2px;
+      margin-bottom: 32px;
+      border-bottom: 1px solid var(--border);
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+
+    .tab-bar::-webkit-scrollbar { display: none; }
+
+    .tab-btn {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 18px;
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--ink-mute);
+      background: transparent;
+      border: none;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      cursor: pointer;
+      transition: color 0.15s, border-color 0.15s;
+      white-space: nowrap;
+    }
+
+    .tab-btn:hover { color: var(--ink-mid); }
+
+    .tab-btn.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+
+    .tab-btn .tab-count {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: 600;
+      min-width: 18px;
+      height: 18px;
+      padding: 0 5px;
+      border-radius: 9px;
+      background: var(--surface-alt);
+      color: var(--ink-mute);
+      transition: background 0.15s, color 0.15s;
+    }
+
+    .tab-btn.active .tab-count {
+      background: var(--accent-soft);
+      color: var(--accent);
+    }
+
+    /* ── Tab panels ── */
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* ── Tab intro banner ── */
+    .tab-intro {
+      background: var(--accent);
+      color: #fff;
+      border-radius: 10px;
+      padding: 20px 26px;
+      margin-bottom: 28px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .tab-intro-icon {
+      font-family: 'Newsreader', serif;
+      font-size: 40px;
+      font-weight: 400;
+      color: rgba(255,255,255,0.25);
+      line-height: 1;
+      flex-shrink: 0;
+    }
+
+    .tab-intro-title {
+      font-family: 'Newsreader', serif;
+      font-size: 20px;
+      font-weight: 500;
+      margin-bottom: 4px;
+    }
+
+    .tab-intro-desc {
+      font-size: 13px;
+      color: rgba(255,255,255,0.7);
+      line-height: 1.5;
+    }
+
+    /* ── POUR section headers ── */
+    .pour-section {
+      margin-bottom: 40px;
+    }
+
+    .pour-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border-soft);
+    }
+
+    .pour-letter {
+      font-family: 'Newsreader', serif;
+      font-size: 13px;
+      font-weight: 600;
+      color: #fff;
+      background: var(--accent);
+      width: 26px;
+      height: 26px;
+      border-radius: 5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .pour-name {
+      font-family: 'Newsreader', serif;
+      font-size: 17px;
+      font-weight: 500;
+      color: var(--accent);
+    }
+
+    .pour-count {
+      font-size: 11px;
+      color: var(--ink-mute);
+      margin-left: auto;
+    }
+
+    /* ── Guideline card ── */
+    .guideline {
+      background: var(--surface);
+      border: 1px solid var(--border-soft);
+      border-radius: 10px;
+      padding: 22px 26px;
+      margin-bottom: 12px;
+      box-shadow: var(--shadow-ring);
+    }
+
+    .guideline:last-child { margin-bottom: 0; }
+
+    /* Card head */
+    .guideline-head {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+
+    .guideline-code {
+      flex-shrink: 0;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      color: var(--accent);
+      background: var(--accent-soft);
+      border-radius: 4px;
+      padding: 3px 8px;
+      margin-top: 3px;
+      white-space: nowrap;
+    }
+
+    .guideline-title {
+      font-family: 'Newsreader', serif;
+      font-size: 18px;
+      font-weight: 500;
+      line-height: 1.25;
+      color: var(--ink);
+    }
+
+    .badge-new {
+      display: inline-flex;
+      align-items: center;
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--new-ink);
+      background: var(--new-bg);
+      border: 1px solid var(--new-border);
+      border-radius: 4px;
+      padding: 2px 7px;
+      margin-left: 10px;
+      vertical-align: middle;
+      position: relative;
+      top: -2px;
+    }
+
+    .badge-split {
+      display: inline-flex;
+      align-items: center;
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--split-ink);
+      background: var(--split-bg);
+      border: 1px solid var(--split-border);
+      border-radius: 4px;
+      padding: 2px 7px;
+      margin-left: 10px;
+      vertical-align: middle;
+      position: relative;
+      top: -2px;
+    }
+
+    /* Content owns block */
+    .guideline-owns {
+      margin-top: 10px;
+      padding: 11px 14px;
+      background: var(--split-bg);
+      border: 1px solid var(--split-border);
+      border-radius: 7px;
+      font-size: 12.5px;
+      color: var(--split-ink);
+      line-height: 1.5;
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+    }
+
+    .guideline-owns .owns-label {
+      flex-shrink: 0;
+      font-weight: 600;
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      opacity: 0.65;
+      padding-top: 1px;
+    }
+
+    /* Rule */
+    .guideline-rule {
+      font-size: 13.5px;
+      font-weight: 500;
+      color: var(--ink-mid);
+      line-height: 1.55;
+      margin-bottom: 14px;
+    }
+
+    .guideline-divider {
+      border: none;
+      border-top: 1px solid var(--border-soft);
+      margin: 14px 0;
+    }
+
+    /* Do / Don't */
+    .do-dont {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    @media (max-width: 580px) {
+      .do-dont { grid-template-columns: 1fr; }
+    }
+
+    .do-block, .dont-block {
+      border-radius: 7px;
+      padding: 11px 13px;
+      font-size: 12.5px;
+      line-height: 1.5;
+    }
+
+    .do-block {
+      background: var(--do-bg);
+      border: 1px solid var(--do-border);
+      color: var(--do);
+    }
+
+    .dont-block {
+      background: var(--dont-bg);
+      border: 1px solid var(--dont-border);
+      color: var(--dont);
+    }
+
+    .do-label, .dont-label {
+      font-weight: 600;
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+      opacity: 0.65;
+    }
+
+    /* Document block — Design→Dev only */
+    .guideline-doc {
+      margin-top: 10px;
+      padding: 11px 14px;
+      background: var(--doc-bg);
+      border: 1px solid var(--doc-border);
+      border-radius: 7px;
+      font-size: 12.5px;
+      color: var(--doc-ink);
+      line-height: 1.5;
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+    }
+
+    .guideline-doc .doc-label {
+      flex-shrink: 0;
+      font-weight: 600;
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      opacity: 0.65;
+      padding-top: 1px;
+    }
+
+    /* Implement block — Dev only */
+    .guideline-impl {
+      margin-top: 10px;
+      padding: 11px 14px;
+      background: var(--impl-bg);
+      border: 1px solid var(--impl-border);
+      border-radius: 7px;
+      font-size: 12.5px;
+      color: var(--impl-ink);
+      line-height: 1.5;
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+    }
+
+    .guideline-impl .impl-label {
+      flex-shrink: 0;
+      font-weight: 600;
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      opacity: 0.65;
+      padding-top: 1px;
+    }
+
+    /* Note */
+    .guideline-note {
+      font-size: 11.5px;
+      color: var(--ink-mute);
+      font-style: italic;
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid var(--border-soft);
+      line-height: 1.55;
+    }
+
+    /* ── Legend ── */
+    .legend {
+      display: flex;
+      gap: 18px;
+      flex-wrap: wrap;
+      margin-bottom: 28px;
+      padding: 14px 18px;
+      background: var(--surface);
+      border: 1px solid var(--border-soft);
+      border-radius: 8px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 11.5px;
+      color: var(--ink-mid);
+    }
+
+    .legend-swatch {
+      width: 10px;
+      height: 10px;
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+
+    /* ── Footer ── */
+    .page-footer {
+      margin-top: 56px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border);
+      font-size: 11.5px;
+      color: var(--ink-mute);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ── Page Header ── -->
+  <header class="page-header">
+    <p class="eyebrow">WCAG 2.2 · AA Compliance</p>
+    <h1>A11ySidekick</h1>
+    <p class="subtitle">Simplified, human-readable guidelines organised by who owns each decision. Use the tabs to focus on your role.</p>
+    <div class="meta-row">
+      <span class="meta-pill"><span class="dot"></span>Target: AA Compliance</span>
+      <span class="meta-pill"><span class="dot"></span>Standard: WCAG 2.2</span>
+      <span class="meta-pill"><span class="dot"></span>56 total criteria</span>
+    </div>
+  </header>
+
+  <!-- ── Tab Bar ── -->
+  <nav class="tab-bar" role="tablist">
+    <button class="tab-btn active" role="tab" aria-selected="true"  data-tab="design"      onclick="switchTab('design')">Design <span class="tab-count">13</span></button>
+    <button class="tab-btn"        role="tab" aria-selected="false" data-tab="design-dev"  onclick="switchTab('design-dev')">Design → Dev <span class="tab-count">22</span></button>
+    <button class="tab-btn"        role="tab" aria-selected="false" data-tab="dev"         onclick="switchTab('dev')">Dev Only <span class="tab-count">12</span></button>
+    <button class="tab-btn"        role="tab" aria-selected="false" data-tab="content"     onclick="switchTab('content')">Content <span class="tab-count">11</span></button>
+  </nav>
+
+  <!-- ════════════════════════════════════════
+       TAB 1 · DESIGN
+  ════════════════════════════════════════ -->
+  <div class="tab-panel active" id="tab-design">
+
+    <div class="tab-intro">
+      <span class="tab-intro-icon">✏</span>
+      <div>
+        <p class="tab-intro-title">Design-owned criteria</p>
+        <p class="tab-intro-desc">These decisions live entirely in Figma. Resolve them before anything leaves the design phase — no spec or handoff note needed.</p>
+      </div>
+    </div>
+
+    <div class="legend">
+      <div class="legend-item"><span class="legend-swatch" style="background:var(--do-bg);border:1px solid var(--do-border)"></span> Do this</div>
+      <div class="legend-item"><span class="legend-swatch" style="background:var(--dont-bg);border:1px solid var(--dont-border)"></span> Don't do this</div>
+      <div class="legend-item"><span class="legend-swatch" style="background:var(--new-bg);border:1px solid var(--new-border)"></span> New in WCAG 2.2</div>
+    </div>
+
+    <!-- P: Perceivable -->
+    <div class="pour-section">
+      <div class="pour-header">
+        <span class="pour-letter">P</span>
+        <span class="pour-name">Perceivable</span>
+        <span class="pour-count">6 criteria</span>
+      </div>
+
+      <div class="guideline">
+        <div class="guideline-head">
+          <span class="guideline-code">1.4.1</span>
+          <h2 class="guideline-title">Use of Color</h2>
+        </div>
+        <p class="guideline-rule">Never use color as the only way to communicate something. If you strip all color from your design, every piece of information should still be readable.</p>
+        <hr class="guideline-divider" />
+        <div class="do-dont">
+          <div class="do-block"><p class="do-label">✓ Do</p>Pair color with an icon, label, pattern, or underline to convey meaning</div>
+          <div class="dont-block"><p class="dont-label">✗ Don't</p>Use a red border alone to indicate an error field — without a label or icon</div>
+        </div>
+      </div>
+
+      <div class="guideline">
+        <div class="guideline-head">
+          <span class="guideline-code">1.4.3</span>
+          <h2 class="guideline-title">Contrast (Minimum)</h2>
+        </div>
+        <p class="guideline-rule">Text must have a contrast ratio of at least 4.5:1 against its background. Small text that's hard to read isn't just a style problem — it's a barrier.</p>
+        <hr class="guideline-divider" />
+        <div class="do-dont">
+          <div class="do-block"><p class="do-label">✓ Do</p>Check every text color + background combination with a contrast checker before finalising</div>
+          <div class="dont-block"><p class="dont-label">✗ Don't</p>Use light grey body copy on a white background because it "looks clean"</div>
+        </div>
+        <p class="guideline-note">Large text (18pt regular or 14pt bold and above) only needs a 3:1 ratio.</p>
+      </div>
+
+      <div class="guideline">
+        <div class="guideline-head">
+          <span class="guideline-code">1.4.5</span>
+          <h2 class="guideline-title">Images of Text</h2>
+        </div>
+        <p class="guideline-rule">Use real text instead of text baked into images. Images of text can't be resized, translated, or read by screen readers.</p>
+        <hr class="guideline-divider" />
+        <div class="do-dont">
+          <div class="do-block"><p class="do-label">✓ Do</p>Set all headlines, labels, and body copy as live text in Figma</div>
+          <div class="dont-block"><p class="dont-label">✗ Don't</p>Drop in a PNG of a stylised heading because the font isn't available</div>
+        </div>
+        <p class="guideline-note">Exception: logos and wordmarks where the text is part of the brand identity.</p>
+      </div>
+
+      <div class="guideline">
+        <div class="guideline-head">
+          <span class="guideline-code">1.4.11</span>
+          <h2 class="guideline-title">Non-text Contrast</h2>
+        </div>
+        <p class="guideline-rule">UI components and icons must have a contrast ratio of at least 3:1 against their background. This applies to anything interactive or meaningful — buttons, inputs, checkboxes, icons, dividers.</p>
+        <hr class="guideline-divider" />
+        <div class="do-dont">
+          <div class="do-block"><p class="do-label">✓ Do</p>Check the border of an input field, the stroke of an icon, and the outline of a button against their background</div>
+          <div class="dont-block"><p class="dont-label">✗ Don't</p>Use a light grey button border on white just because the fill colour looks fine</div>
+        </div>
+      </div>
+
+      <div class="guideline">
+        <div class="guideline-head">
+          <span class="guideline-code">1.3.3</span>
+          <h2 class="guideline-title">Sensory Characteristics</h2>
+        </div>
+        <p class="guideline-rule">Never design UI that can only be understood by its appearance, position, or sound. Instructions like "tap the blue icon" or "use the button on the right" break down for users who can't perceive those characteristics.</p>
+        <hr class="guideline-divider" />
+        <div class="do-dont">
+          <div class="do-block"><p class="do-label">✓ Do</p>Design labels and instructions that name the element directly ("tap Save")</div>
+          <div class="dont-block"><p class="dont-label">✗ Don't</p>Design UI that requires copy like "see the panel on the left" to be understood</div>
+        </div>
+      </div>
+
+      <div class="guideline">
+        <div class="guideline-head">
+          <span class="guideline-code">2.3.1</span>
+          <h2 class="guideline-title">Three Flashes</h2>
+        </div>
+        <p class="guideline-rule">Nothing on screen should flash more than 3 times per second. Flashing content can trigger seizures in users with photosensitive epilepsy.</p>
+        <hr class="guideline-divider" />
+        <div class="do-dont">
+          <div class="do-block"><p class="do-label">✓ Do</p>Keep animations smooth and below the threshold; test any looping motion before handoff</div>
+          <div class="dont-block"><p class="dont-label">✗ Don't</p>Use rapid strobe effects, fast-cycling highlights, or attention-grabbing flashes</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- O: Operable -->
+    <div class="pour-section">
+      <div class="pour-header">
+        <span class="pour-letter">O</span>
+        <span class="pour-name">Operable</span>
+        <span class="pour-count">4 criteria</span>
+      </div>
+
+      <div class="guideline">
+        <div class="guideline-head">
+          <span class="guideline-code">2.4.5</span>
+          <h2 class="guideline-title">Multiple Ways</h2>
+        </div>
+        <p class="guideline-rule">Users should be able to reach any screen through more than one path. Relying on a single navigation route creates dead ends for users who navigate differently.</p>
+        <hr class="guideline-divider" />
+        <div class="do-dont">
+          <div class="do-block"><p class="do-label">✓ Do</p>Design search, breadcrumbs, sitemaps, or related links as additional pathways to key screens</div>
+          <div class="dont-block"><p class="dont-label">✗ Don't</p>Design a flow where the only way to reach a screen is through one specific sequence</div>
+        </div>
+      </div>
+
+      <div class="guideline">
+        <div class="guideline-head">
+          <span class="guideline-code">2.4.7</span>
+          <h2 class="guideline-title">Focus Visible</h2>
+        </div>
+        <p class="guideline-rule">Every interactive element must show a visible focus indicator when selected via keyboard. If a keyboard user can't see where they are on screen, they're effectively lost.</p>
+        <hr class="guideline-divider" />
+        <div class="do-dont">
+          <div class="do-block"><p class="do-label">✓ Do</p>Design a distinct focus style for every interactive component — buttons, links, inputs, tabs</div>
+          <div class="dont-block"><p class="dont-label">✗ Don't</p>Remove the default browser focus ring without replacing it with something equally visible</div>
+        </div>
+      </div>
+
+      <div class="guideline">
+        <div class="guideline-head">
+          <span class="guideline-code">2.4.11</span>
+          <h2 class="guideline-title">Focus Not Obscured (Minimum) <span class="badge-new">New 2.2</span></h2>
+        </div>
+        <p class="guideline-rule">When an element receives focus, it must not be completely hidden by other content. Sticky headers, floating toolbars, cookie banners, and modals are common culprits.</p>
+        <hr class="guideline-divider" />
+        <div class="do-dont">
+          <div class="do-block"><p class="do-label">✓ Do</p>Check that focused elements remain at least partially visible when sticky UI is present on screen</div>
+          <div class="dont-block"><p class="dont-label">✗ Don't</p>Design a sticky header that covers the top row of interactive elements when the user scrolls</div>
+        </div>
+      </div>
+
+      <div class="guideline">
+        <div class="guideline-head">
+          <span class="guideline-code">2.5.8</span>
+          <h2 class="guideline-title">Target Size (Minimum) <span class="badge-new">New 2.2</span></h2>
+        </div>
+        <p class="guideline-rule">Interactive targets must be at least 24×24px. Aim for 44×44px for touch interfaces. Small targets are hard to hit for anyone using a finger, stylus, or with limited motor control.</p>
+        <hr class="guideline-divider" />
+        <div class="do-dont">
+          <div class="do-block"><p class="do-label">✓ Do</p>Set minimum tap/click target sizes in your design system; add invisible padding around small icons</div>
+          <div class="dont-block"><p class="dont-label">✗ Don't</p>Design icon-only buttons at 16px and assume the visual size is the same as the tap size</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- U: Understandable -->
+    <div class="pour-section">
+      <div class="pour-header">
+        <span class="pour-letter">U</span>
+        <span class="pour-name">Understandable</span>
+        <span class="pour-count">3 criteria</span>
+      </div>
+
+      <div class="guideline">
+        <div class="guideline-head">
+          <span class="guideline-code">3.2.3</span>
+          <h2 class="guideline-title">Consistent Navigation</h2>
+        </div>
+        <p class="guideline-rule">Navigation that appears across multiple screens must appear in the same place and order every time. Inconsistency forces users to relearn the interface on every screen.</p>
+        <hr class="guideline-divider" />
+        <div class="do-dont">
+          <div class="do-block"><p class="do-label">✓ Do</p>Lock navigation components in your design system; don't reorder items between screens</div>
+          <div class="dont-block"><p class="dont-label">✗ Don't</p>Move the back button or rearrange nav items based on what "feels right" for a specific screen</div>
+        </div>
+      </div>
+
+      <div class="guideline">
+        <div class="guideline-head">
+          <span class="guideline-code">3.2.4</span>
+          <h2 class="guideline-title">Consistent Identification</h2>
+        </div>
+        <p class="guideline-rule">Components that do the same thing must look the same and be named the same across the product. A search icon that changes between screens creates unnecessary confusion.</p>
+        <hr class="guideline-divider" />
+        <div class="do-dont">
+          <div class="do-block"><p class="do-label">✓ Do</p>Build a design system where every component has one visual form and one consistent name</div>
+          <div class="dont-block"><p class="dont-label">✗ Don't</p>Use "Submit," "Send," and "Go" interchangeably for the same action across different screens</div>
+        </div>
+      </div>
+
+      <div class="guideline">
+        <div class="guideline-head">
+          <span class="guideline-code">3.2.6</span>
+          <h2 class="guideline-title">Consistent Help <span class="badge-new">New 2.2</span></h2>
+        </div>
+        <p class="guideline-rule">If help is available (chat, FAQ, support link), it must appear in the same location on every screen. Users who need help shouldn't have to hunt for it differently each time.</p>
+        <hr class="guideline-divider" />
+        <div class="do-dont">
+          <div class="do-block"><p class="do-label">✓ Do</p>Fix the position of help entry points in your layout grid — consistent across all screens</div>
+          <div class="dont-block"><p class="dont-label">✗ Don't</p>Show a help icon in the header on some screens and in the footer on others</div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /tab-design -->
+
+
+  <!-- ════════════════════════════════════════
+       TAB 2 · DESIGN → DEV
+  ════════════════════════════════════════ -->
+  <div class="tab-panel" id="tab-design-dev">
+
+    <div class="tab-intro">
+      <span class="tab-intro-icon">⇢</span>
+      <div>
+        <p class="tab-intro-title">Design → Dev criteria</p>
+        <p class="tab-intro-desc">The design decision is yours — but dev needs a spec to implement it correctly. Each card tells you exactly what to document before handoff.</p>
+      </div>
+    </div>
+
+    <div class="legend">
+      <div class="legend-item"><span class="legend-swatch" style="background:var(--do-bg);border:1px solid var(--do-border)"></span> Do this</div>
+      <div class="legend-item"><span class="legend-swatch" style="background:var(--dont-bg);border:1px solid var(--dont-border)"></span> Don't do this</div>
+      <div class="legend-item"><span class="legend-swatch" style="background:var(--doc-bg);border:1px solid var(--doc-border)"></span> Document for dev</div>
+      <div class="legend-item"><span class="legend-swatch" style="background:var(--new-bg);border:1px solid var(--new-border)"></span> New in WCAG 2.2</div>
+    </div>
+
+    <!-- P: Perceivable -->
+    <div class="pour-section">
+      <div class="pour-header">
+        <span class="pour-letter">P</span>
+        <span class="pour-name">Perceivable</span>
+        <span class="pour-count">6 criteria</span>
+      </div>
+
+      <div class="guideline">
+        <div class="guideline-head">
+          <span class="guideline-code">1.1.1</span>
+          <h2 class="guideline-title">Non-text Content</h2>
+        </div>
+        <p class="guideline-rule">Every image, icon, and illustration needs declared intent. You're the only one who knows if it's decorative (ignore it) or meaningful (describe it). Dev can't make this call from looking at the design.</p>
+        <hr class="guideline-divider" />
+        <div class="do-dont">
+          <div class="do-block"><p class="do-label">✓ Do</p>Annotate every non-text element as either "decorative" or provide suggested alt text</div>
+          <div class="dont-block"><p class="dont-label">✗ Don't</p>Leave icons and illustrations unannotated and assume dev will figure out the intent</div>
+        </div>
+        <div class="guideline-doc">
+          <span class="doc-label">Document</span>
+          <span>Annotation on each image/icon — mark as "decorative" or provide alt text copy</span>
+        </div>
+      </div>
+
+      <div class="guideline">
+        <div class="guideline-head">
+          <span class="guideline-code">1.3.1</span>
+          <h2 class="guideline-title">Info and Relationships</h2>
+        </div>
+        <p class="guideline-rule">The visual hierarchy you create — heading sizes, groupings, table structures, form layouts — needs to be encoded semantically in code. Dev can't guess your intended structure from visual styling alone.</p>
+        <hr class="guideline-divider" />
+        <div class="do-dont">
+          <div class="do-block"><p class="do-label">✓ Do</p>Annotate heading levels (H1/H2/H3), table structures, and logical form groupings on every screen</div>
+          <div class="dont-block"><p class="dont-label">✗ Don't</p>Assume that because something looks like a heading, dev will automatically code it as one</div>
+        </div>
+        <div class="guideline-doc">
+          <span class="doc-label">Document</span>
+          <span>Heading level map per screen (H1–H4); table header/row structure; form field groupings with labels</span>
+        </div>
+      </div>
+
+      <div class="guideline">
+        <div class="guideline-head">
+          <span class="guideline-code">1.3.2</span>
+          <h2 class="guideline-title">Meaningful Sequence</h2>
+        </div>
+        <p class="guideline-rule">Screen readers read in DOM order, not visual order. If your layout has columns, overlapping elements, cards, or any non-linear flow — dev needs to know the intended reading sequence.</p>
+        <hr class="guideline-divider" />
+        <div class="do-dont">
+          <div class="do-block"><p class="do-label">✓ Do</p>Add numbered reading order annotations to any layout that isn't strictly top-left to bottom-right</div>
+          <div class="dont-block"><p class="dont-label">✗ Don't</p>Design multi-column or overlapping layouts without specifying the intended reading order</div>
+        </div>
+        <div class="guideline-doc">
+          <span class="doc-label">Document</span>
+          <span>Numbered reading order annotation on any non-linear layout — every screen with columns, cards, or overlapping elements</span>
+        </div>
+      </div>
+
+      <div class="guideline">
+        <div class="guideline-head">
+          <span class="guideline-code">1.3.5</span>
+          <h2 class="guideline-title">Identify Input Purpose</h2>
+        </div>
+        <p class="guideline-rule">Every input field needs its purpose declared so browsers can offer autofill correctly. You define what the field is for; dev implements the correct autocomplete attribute.</p>
+        <hr class="guideline-divider" />
+        <div class="do-dont">
+          <div class="do-block"><p class="do-label">✓ Do</p>Label the purpose of every form field explicitly — name, email, phone, street address, city, etc.</div>
+          <div class="dont-block"><p class="dont-label">✗ Don't</p>Use vague labels like "Field 1" or "Enter details" — dev needs to know what type of data is expected</div>
+        </div>
+        <div class="guideline-doc">
+          <span class="doc-label">Document</span>
+          <span>Input purpose annotation for every form field using standard names: name, email, tel, street-address, postal-code, etc.</span>
+        </div>
+      </div>
+
+      <div class="guideline">
+        <div class="guideline-head">
+          <span class="guideline-code">1.4.2</span>
+          <h2 class="guideline-title">Audio Control</h2>
+        </div>
+        <p class="guideline-rule">If any screen has auto-playing audio, a visible pause/stop control must be designed. Dev implements the behavior, but the control has to exist in your design first.</p>
+        <hr class="guideline-divider" />
+        <div class="do-dont">
+          <div class="do-block"><p class="do-label">✓ Do</p>Design a visible, clearly labelled pause/stop control for any screen with auto-playing audio or video</div>
+          <div class="dont-block"><p class="dont-label">✗ Don't</p>Hand off screens with auto-playing media and leave the control placement undefined</div>
+        </div>
+        <div class="guideline-doc">
+          <span class="doc-label">Document</span>
+          <span>Placement, size, and label of pause/stop controls for every screen containing auto-playing media</span>
+        </div>
+      </div>
+
+      <div class="guideline">
+        <div class="guideline-head">
+          <span class="guideline-code">1.4.13</span>
+          <h2 class="guideline-title">Content on Hover or Focus</h2>
+        </div>
+        <p class="guideline-rule">Tooltips, dropdowns, and hover cards that appear on focus must behave in three specific ways — they must be dismissable without moving focus, hoverable without disappearing, and persistent until dismissed. You define the behavior; dev implements it.</p>
+        <hr class="guideline-divider" />
+        <div class="do-dont">
+          <div class="do-block"><p class="do-label">✓ Do</p>Specify dismissal method (e.g. Escape key), hover persistence, and how long the content stays visible</div>
+          <div class="dont-block"><p class="dont-label">✗ Don't</p>Design tooltips without specifying their behavior — "appears on hover" is not enough information</div>
+        </div>
+        <div class="guideline-doc">
+          <span class="doc-label">Document</span>
+          <span>For every hover/focus-triggered element: trigger condition, dismissal method, hover persistence, and whether it disappears on pointer leave</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- O: Operable -->
+    <div class="pour-section">
+      <div class="pour-header">
+        <span class="pour-letter">O</span>
+        <span class="pour-name">Operable</span>
+        <span class="pour-count">10 criteria</span>
+      </div>
+
+      <div class="guideline">
+        <div class="guideline-head">
+          <span class="guideline-code">2.1.1</span>
+          <h2 class="guideline-title">Keyboard</h2>
+        </div>
+        <p class="guideline-rule">Every interactive element must be reachable and operable via keyboard alone. You need to confirm that all interactions are covered in your design — dev then implements the keyboard handlers.</p>
+        <hr class="guideline-divider" />
+        <div class="do-dont">
+          <div class="do-block"><p class="do-label">✓ Do</p>Create an inventory of every interactive element per screen; flag any custom interactions (drag, swipe, gesture)</div>
+          <div class="dont-block"><p class="dont-label">✗ Don't</p>Design interactions that only work with a mouse or touch gesture without specifying a keyboard alternative</div>
+        </div>
+        <div class="guideline-doc">
+          <span class="doc-label">Document</span>
+          <span>Full inventory of interactive elements per screen; keyboard alternative for any custom or gesture-based interaction</span>
+        </div>
+      </div>
+
+      <div class="guideline">
+        <div class="guideline-head">
+          <span class="guideline-code">2.2.1</span>
+          <h2 class="guideline-title">Timing Adjustable</h2>
+        </div>
+        <p class="guideline-rule">If any screen has a timeout or session expiry, a visible UI to extend or dismiss it must be designed. The warning UI is your responsibility; the logic behind it is dev's.</p>
+        <hr class="guideline-divider" />
+        <div class="do-dont">
+          <div class="do-block"><p class="do-label">✓ Do</p>Design a timeout warning dialog with clear options to extend, save, or dismiss — before the session expires</div>
+          <div class="dont-block"><p class="dont-label">✗ Don't</p>Rely on dev to design the timeout warning — if it's not in your frames, it probably won't exist</div>
+        </div>
+        <div class="guideline-doc">
+          <span class="doc-label">Document</span>
+          <span>Timeout warning UI design, placement, trigger timing, and the available actions (extend/save/dismiss)</span>
+        </div>
+      </div>
+
+      <div class="guideline">
+        <div class="guideline-head">
+          <span class="guideline-code">2.2.2</span>
+          <h2 class="guideline-title">Pause, Stop, Hide</h2>
+        </div>
+        <p class="guideline-rule">Carousels, animations, auto-scrolling content, and tickers all need visible controls. You define where and how they appear; dev implements the behavior.</p>
+        <hr class="guideline-divider" />
+        <div class="do-dont">
+          <div class="do-block"><p class="do-label">✓ Do</p>Include pause, stop, or hide controls in the design for every piece of moving or auto-updating content</div>
+          <div class="dont-block"><p class="dont-label">✗ Don't</p>Design auto-playing carousels or tickers without including visible controls in the frame</div>
+        </div>
+        <div class="guideline-doc">
+          <span class="doc-label">Document</span>
+          <span>Placement and visual design of pause/stop/hide controls for all moving content; specify what each control does</span>
+        </div>
+      </div>
+
+      <div class="guideline">
+        <div class="guideline-head">
+          <span class="guideline-code">2.4.3</span>
+          <h2 class="guideline-title">Focus Order</h2>
+        </div>
+        <p class="guideline-rule">The order in which a keyboard user tabs through elements must match the logical reading and interaction order. You define the intended sequence; dev implements it in the DOM.</p>
+        <hr class="guideline-divider" />
+        <div class="do-dont">
+          <div class="do-block"><p class="do-label">✓ Do</p>Add numbered tab order annotations to every screen with modals, multi-column layouts, or custom component flows</div>
+          <div class="dont-block"><p class="dont-label">✗ Don't</p>Assume tab order will match visual order — CSS layout and visual positioning often don't match DOM order</div>
+        </div>
+        <div class="guideline-doc">
+          <span class="doc-label">Document</span>
+          <span>Numbered tab order annotation on every screen with non-linear layouts, modals, drawers, or multi-step flows</span>
+        </div>
+      </div>
+
+      <div class="guideline">
+        <div class="guideline-head">
+          <span class="guideline-code">2.4.4</span>
+          <h2 class="guideline-title">Link Purpose (In Context)</h2>
+        </div>
+        <p class="guideline-rule">Link labels must make sense in context. "Click here," "Read more," and "Learn more" fail this — especially when multiple appear on the same screen. Designer and content owner must align on meaningful labels; dev implements accessible names.</p>
+        <hr class="guideline-divider" />
+        <div class="do-dont">
+          <div class="do-block"><p class="do-label">✓ Do</p>Write link labels that describe the destination or action — "Read the full report," "Download invoice #1042"</div>
+          <div class="dont-block"><p class="dont-label">✗ Don't</p>Use "Read more" or "Click here" as link labels — they're meaningless to screen reader users navigating by links</div>
+        </div>
+        <div class="guideline-doc">
+          <span class="doc-label">Document</span>
+          <span>Accessible name for every link — especially icon-only links, image links, and any link whose visible label is ambiguous</span>
+        </div>
+      </div>
+
+      <div class="guideline">
+        <div class="guideline-head">
+          <span class="guideline-code">2.4.6</span>
+          <h2 class="guideline-title">Headings and Labels</h2>
+        </div>
+        <p class="guideline-rule">The visual heading hierarchy needs to be explicitly mapped to heading levels. What looks like an H2 visually must be coded as an H2 — dev needs you to tell them which level each heading is.</p>
+        <hr class="guideline-divider" />
+        <div class="do-dont">
+          <div class="do-block"><p class="do-label">✓ Do</p>Annotate every heading with its intended level (H1, H2, H3, H4) on each screen</div>
+          <div class="dont-block"><p class="dont-label">✗ Don't</p>Use heading size as a purely visual decision — "big text" and "H1" are not the same thing</div>
+        </div>
+        <div class="guideline-doc">
+          <span class="doc-label">Document</span>
+          <span>Heading level annotation (H1–H4) for every screen; label text for all form controls and UI regions</span>
+        </div>
+      </div>
+
+      <div class="guideline">
+        <div class="guideline-head">
+          <span class="guideline-code">2.5.1</span>
+          <h2 class="guideline-title">Pointer Gestures</h2>
+        </div>
+        <p class="guideline-rule">Any interaction requiring a multi-touch gesture (pinch to zoom, two-finger swipe, rotate) must also be achievable with a single pointer. You design both paths; dev implements them.</p>
+        <hr class="guideline-divider" />
+        <div class="do-dont">
+          <div class="do-block"><p class="do-label">✓ Do</p>For every multi-touch gesture, design an equivalent single-tap or button-based alternative</div>
+          <div class="dont-block"><p class="dont-label">✗ Don't</p>Design interactions that only work with two fingers without providing a single-pointer alternative</div>
+        </div>
+        <div class="guideline-doc">
+          <span class="doc-label">Document</span>
+          <span>For every multi-touch gesture in the product: name the gesture and specify its single-pointer alternative interaction</span>
+        </div>
+      </div>
+
+      <div class="guideline">
+        <div class="guideline-head">
+          <span class="guideline-code">2.5.3</span>
+          <h2 class="guideline-title">Label in Name</h2>
+        </div>
+        <p class="guideline-rule">The visible text label on a button or link must be contained within its accessible name. If a button says "Save," the screen reader cannot call it "Submit." The visible label must match or be part of the programmatic name.</p>
+        <hr class="guideline-divider" />
+        <div class="do-dont">
+          <div class="do-block"><p class="do-label">✓ Do</p>Ensure the accessible name you specify for every component includes the exact visible label text</div>
+          <div class="dont-block"><p class="dont-label">✗ Don't</p>Use an aria-label that replaces or contradicts the visible label — "Save" visible, "Submit form" as aria-label</div>
+        </div>
+        <div class="guideline-doc">
+          <span class="doc-label">Document</span>
+          <span>Accessible name for every interactive component — confirm it contains the visible label verbatim</span>
+        </div>
+      </div>
+
+      <div class="guideline">
+        <div class="guideline-head">
+          <span class="guideline-code">2.5.4</span>
+          <h2 class="guideline-title">Motion Actuation</h2>
+        </div>
+        <p class="guideline-rule">If any feature is triggered by device motion — shake to undo, tilt to navigate, gyroscope-based interaction — an equivalent on-screen UI control must be designed.</p>
+        <hr class="guideline-divider" />
+        <div class="do-dont">
+          <div class="do-block"><p class="do-label">✓ Do</p>Design an on-screen button or control equivalent for every motion-triggered feature</div>
+          <div class="dont-block"><p class="dont-label">✗ Don't</p>Ship motion-triggered interactions without an on-screen alternative — not all users can physically move their device</div>
+        </div>
+        <div class="guideline-doc">
+          <span class="doc-label">Document</span>
+          <span>On-screen UI alternative for every motion-triggered interaction; note which motion it replaces and how to disable motion activation</span>
+        </div>
+      </div>
+
+      <div class="guideline">
+        <div class="guideline-head">
+          <span class="guideline-code">2.5.7</span>
+          <h2 class="guideline-title">Dragging Movements <span class="badge-new">New 2.2</span></h2>
+        </div>
+        <p class="guideline-rule">Any drag interaction — reordering lists, sliders, kanban cards, resizable panels — needs a single-pointer alternative that doesn't require dragging. You design both; dev implements both.</p>
+        <hr class="guideline-divider" />
+        <div class="do-dont">
+          <div class="do-block"><p class="do-label">✓ Do</p>For every drag-based UI element, design an equivalent interaction using taps, clicks, or keyboard controls</div>
+          <div class="dont-block"><p class="dont-label">✗ Don't</p>Design sortable lists, drag-to-resize panels, or sliders without a non-drag alternative</div>
+        </div>
+        <div class="guideline-doc">
+          <span class="doc-label">Document</span>
+          <span>For every drag interaction: name the element, describe the drag behavior, and specify the single-pointer or keyboard alternative</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- U: Understandable -->
+    <div class="pour-section">
+      <div class="pour-header">
+        <span class="pour-letter">U</span>
+        <span class="pour-name">Understandable</span>
+        <span class="pour-count">4 criteria</span>
+      </div>
+
+      <div class="guideline">
+        <div class="guideline-head">
+          <span class="guideline-code">3.3.1</span>
+          <h2 class="guideline-title">Error Identification</h2>
+        </div>
+        <p class="guideline-rule">Error states must be designed for every form field that can fail validation. You design what the error state looks like and write the message; dev implements the detection logic and triggers the right state.</p>
+        <hr class="guideline-divider" />
+        <div class="do-dont">
+          <div class="do-block"><p class="do-label">✓ Do</p>Design an explicit error state for every input field — with color, icon, and a descriptive error message</div>
+          <div class="dont-block"><p class="dont-label">✗ Don't</p>Hand off forms without designed error states and expect dev to style them from scratch</div>
+        </div>
+        <div class="guideline-doc">
+          <span class="doc-label">Document</span>
+          <span>Error state design for every input field; error message copy for each failure scenario (empty, wrong format, too long, etc.)</span>
+        </div>
+      </div>
+
+      <div class="guideline">
+        <div class="guideline-head">
+          <span class="guideline-code">3.3.2</span>
+          <h2 class="guideline-title">Labels or Instructions</h2>
+        </div>
+        <p class="guideline-rule">Every form field needs a persistent visible label or clear instruction. Placeholder text alone doesn't count — it disappears when the user starts typing.</p>
+        <hr class="guideline-divider" />
+        <div class="do-dont">
+          <div class="do-block"><p class="do-label">✓ Do</p>Design visible labels above or beside every input; use placeholder text only as supplementary guidance</div>
+          <div class="dont-block"><p class="dont-label">✗ Don't</p>Use placeholder text as the only label — users lose context the moment they start typing</div>
+        </div>
+        <div class="guideline-doc">
+          <span class="doc-label">Document</span>
+          <span>Confirm every input has a persistent visible label (not just placeholder); note any fields with additional instructions or format hints</span>
+        </div>
+      </div>
+
+      <div class="guideline">
+        <div class="guideline-head">
+          <span class="guideline-code">3.3.3</span>
+          <h2 class="guideline-title">Error Suggestion</h2>
+        </div>
+        <p class="guideline-rule">Where a validation error occurs and a fix is known, a suggestion must be surfaced in the UI. "Invalid date" tells a user what's wrong. "Enter a date in DD/MM/YYYY format" tells them how to fix it.</p>
+        <hr class="guideline-divider" />
+        <div class="do-dont">
+          <div class="do-block"><p class="do-label">✓ Do</p>Write specific, actionable error suggestion copy for every common error scenario — and design where it appears</div>
+          <div class="dont-block"><p class="dont-label">✗ Don't</p>Use generic error messages like "Invalid input" — they tell the user nothing about what to do next</div>
+        </div>
+        <div class="guideline-doc">
+          <span class="doc-label">Document</span>
+          <span>Error suggestion copy and placement for each common error scenario per field; coordinate with content on final wording</span>
+        </div>
+      </div>
+
+      <div class="guideline">
+        <div class="guideline-head">
+          <span class="guideline-code">3.3.4</span>
+          <h2 class="guideline-title">Error Prevention</h2>
+        </div>
+        <p class="guideline-rule">For any legal, financial, or irreversible action — deleting an account, submitting a payment, confirming a booking — design must include a review step, confirmation dialog, or undo mechanism.</p>
+        <hr class="guideline-divider" />
+        <div class="do-dont">
+          <div class="do-block"><p class="do-label">✓ Do</p>Design a confirmation step or review screen for every high-stakes or irreversible action</div>
+          <div class="dont-block"><p class="dont-label">✗ Don't</p>Let destructive or financial actions trigger immediately on a single tap without any confirmation</div>
+        </div>
+        <div class="guideline-doc">
+          <span class="doc-label">Document</span>
+          <span>Confirmation dialog or review screen design for every irreversible or high-stakes action; specify what can be changed at the review step</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- U new 2.2 -->
+    <div class="pour-section">
+      <div class="pour-header">
+        <span class="pour-letter">U</span>
+        <span class="pour-name">Understandable — New in 2.2</span>
+        <span class="pour-count">2 criteria</span>
+      </div>
+
+      <div class="guideline">
+        <div class="guideline-head">
+          <span class="guideline-code">3.3.7</span>
+          <h2 class="guideline-title">Redundant Entry <span class="badge-new">New 2.2</span></h2>
+        </div>
+        <p class="guideline-rule">Don't ask users for information they've already provided in the same session. Multi-step forms, checkout flows, and onboarding sequences are common places this breaks down.</p>
+        <hr class="guideline-divider" />
+        <div class="do-dont">
+          <div class="do-block"><p class="do-label">✓ Do</p>Audit every multi-step flow — pre-fill or summarise previously entered information rather than asking again</div>
+          <div class="dont-block"><p class="dont-label">✗ Don't</p>Ask for name, email, or address a second time in the same session if the user already provided it</div>
+        </div>
+        <div class="guideline-doc">
+          <span class="doc-label">Document</span>
+          <span>Flag every field in a multi-step flow that duplicates previously collected data; specify which earlier field it maps to so dev can auto-populate it</span>
+        </div>
+      </div>
+
+      <div class="guideline">
+        <div class="guideline-head">
+          <span class="guideline-code">3.3.8</span>
+          <h2 class="guideline-title">Accessible Authentication <span class="badge-new">New 2.2</span></h2>
+        </div>
+        <p class="guideline-rule">Login and verification flows must not rely solely on cognitive tests — no "retype the code you memorised" or puzzle-solving as the only option. Design must include at least one alternative path that doesn't require memorisation or transcription.</p>
+        <hr class="guideline-divider" />
+        <div class="do-dont">
+          <div class="do-block"><p class="do-label">✓ Do</p>Design authentication flows that allow copy-paste, biometrics, magic links, or password managers</div>
+          <div class="dont-block"><p class="dont-label">✗ Don't</p>Design a login that forces users to memorise and retype an OTP without allowing paste or an alternative method</div>
+        </div>
+        <div class="guideline-doc">
+          <span class="doc-label">Document</span>
+          <span>Full authentication flow with every available path; confirm at least one option doesn't require cognitive transcription — and that copy-paste is not blocked</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- R: Robust -->
+    <div class="pour-section">
+      <div class="pour-header">
+        <span class="pour-letter">R</span>
+        <span class="pour-name">Robust</span>
+        <span class="pour-count">2 criteria</span>
+      </div>
+
+      <div class="guideline">
+        <div class="guideline-head">
+          <span class="guideline-code">4.1.2</span>
+          <h2 class="guideline-title">Name, Role, Value</h2>
+        </div>
+        <p class="guideline-rule">Every interactive component — button, toggle, modal, tab panel, accordion — needs its name, role, and all possible states documented so dev can implement correct ARIA markup and screen reader announcements.</p>
+        <hr class="guideline-divider" />
+        <div class="do-dont">
+          <div class="do-block"><p class="do-label">✓ Do</p>Annotate every component with its name, its role (button, checkbox, dialog…), and all interactive states</div>
+          <div class="dont-block"><p class="dont-label">✗ Don't</p>Hand off custom components — icon buttons, toggles, custom dropdowns — without naming their role and states</div>
+        </div>
+        <div class="guideline-doc">
+          <span class="doc-label">Document</span>
+          <span>For every interactive component: accessible name, ARIA role, and all states — default, hover, focus, active, disabled, selected, expanded, error</span>
+        </div>
+      </div>
+
+      <div class="guideline">
+        <div class="guideline-head">
+          <span class="guideline-code">4.1.3</span>
+          <h2 class="guideline-title">Status Messages</h2>
+        </div>
+        <p class="guideline-rule">Success banners, loading states, error alerts, and form confirmations need to be announced to screen readers without moving keyboard focus. You define where and when they appear; dev implements the live region behavior.</p>
+        <hr class="guideline-divider" />
+        <div class="do-dont">
+          <div class="do-block"><p class="do-label">✓ Do</p>Design every status message as a distinct component with a defined trigger — and mark that focus must not shift to it</div>
+          <div class="dont-block"><p class="dont-label">✗ Don't</p>Design toast notifications or success banners without specifying that they should not steal keyboard focus</div>
+        </div>
+        <div class="guideline-doc">
+          <span class="doc-label">Document</span>
+          <span>For every status message: trigger condition, message copy, placement, duration — and a note that focus must not shift to it on appearance</span>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /tab-design-dev -->
+
+
+  <!-- ════════════════════════════════════════
+       TAB 3 · DEV ONLY
+  ════════════════════════════════════════ -->
+  <div class="tab-panel" id="tab-dev">
+
+    <div class="tab-intro">
+      <span class="tab-intro-icon">⌨</span>
+      <div>
+        <p class="tab-intro-title">Dev-only criteria</p>
+        <p class="tab-intro-desc">No design input required for these 12 criteria. They are resolved entirely in code — semantic HTML, ARIA, CSS units, and browser-level behaviour. The green block on each card tells you what to implement and test.</p>
+      </div>
+    </div>
+
+    <div class="legend">
+      <div class="legend-item"><span class="legend-swatch" style="background:var(--do-bg);border:1px solid var(--do-border)"></span> Do this</div>
+      <div class="legend-item"><span class="legend-swatch" style="background:var(--dont-bg);border:1px solid var(--dont-border)"></span> Don't do this</div>
+      <div class="legend-item"><span class="legend-swatch" style="background:var(--impl-bg);border:1px solid var(--impl-border)"></span> Implement &amp; test</div>
+      <div class="legend-item"><span class="legend-swatch" style="background:var(--new-bg);border:1px solid var(--new-border)"></span> New in WCAG 2.2</div>
+    </div>
+
+    <!-- P: Perceivable -->
+    <div class="pour-section">
+      <div class="pour-header">
+        <span class="pour-letter">P</span>
+        <span class="pour-name">Perceivable</span>
+        <span class="pour-count">4 criteria</span>
+      </div>
+
+      <div class="guideline">
+        <div class="guideline-head">
+          <span class="guideline-code">1.3.4</span>
+          <h2 class="guideline-title">Orientation</h2>
+        </div>
+        <p class="guideline-rule">Content must not be restricted to a single display orientation — portrait or landscape — unless that restriction is essential to the function. Users with devices mounted in a fixed position depend on this.</p>
+        <hr class="guideline-divider" />
+        <div class="do-dont">
+          <div class="do-block"><p class="do-label">✓ Do</p>Support both portrait and landscape orientations in CSS and JS; if locking is unavoidable, display a clear explanation to the user</div>
+          <div class="dont-block"><p class="dont-label">✗ Don't</p>Lock orientation in code as a convenience or stylistic choice — only lock it when the content genuinely cannot work otherwise (e.g. a piano keyboard)</div>
+        </div>
+        <div class="guideline-impl">
+          <span class="impl-label">Implement</span>
+          <span>Never use <code>screen.orientation.lock()</code> or CSS <code>@media (orientation)</code> to hide content. Test layouts in both orientations at common breakpoints.</span>
+        </div>
+      </div>
+
+      <div class="guideline">
+        <div class="guideline-head">
+          <span class="guideline-code">1.4.4</span>
+          <h2 class="guideline-title">Resize Text</h2>
+        </div>
+        <p class="guideline-rule">Text must be resizable up to 200% without losing content or functionality. This is purely a CSS implementation concern — it depends entirely on using relative units instead of fixed pixels.</p>
+        <hr class="guideline-divider" />
+        <div class="do-dont">
+          <div class="do-block"><p class="do-label">✓ Do</p>Use <code>rem</code> or <code>em</code> for all font sizes; use <code>min-height</code> instead of <code>height</code> on text containers</div>
+          <div class="dont-block"><p class="dont-label">✗ Don't</p>Set font sizes in <code>px</code> — pixel values ignore the user's browser font size preference and break at 200% zoom</div>
+        </div>
+        <div class="guideline-impl">
+          <span class="impl-label">Implement</span>
+          <span>Set all font sizes in <code>rem</code>. Test by setting browser default font size to 32px (double the standard 16px) and verify no content is clipped, truncated, or overlapping.</span>
+        </div>
+      </div>
+
+      <div class="guideline">
+        <div class="guideline-head">
+          <span class="guideline-code">1.4.10</span>
+          <h2 class="guideline-title">Reflow</h2>
+        </div>
+        <p class="guideline-rule">At 400% browser zoom (equivalent to a 320px viewport), content must reflow into a single column without requiring horizontal scrolling. Users with low vision zoom in significantly — horizontal scrolling forces them to track two axes simultaneously.</p>
+        <hr class="guideline-divider" />
+        <div class="do-dont">
+          <div class="do-block"><p class="do-label">✓ Do</p>Implement responsive layouts that work at 320px wide; use flexbox or CSS grid with wrapping; avoid fixed-width containers wider than 320px</div>
+          <div class="dont-block"><p class="dont-label">✗ Don't</p>Use fixed-width containers, <code>overflow-x: scroll</code> as a layout solution, or assume 768px is the smallest viewport to support</div>
+        </div>
+        <div class="guideline-impl">
+          <span class="impl-label">Implement</span>
+          <span>Test by setting browser zoom to 400% on a 1280px-wide screen (simulates 320px viewport). All content should be readable in a single column without horizontal scrolling. Exception: data tables and code blocks may scroll horizontally.</span>
+        </div>
+      </div>
+
+      <div class="guideline">
+        <div class="guideline-head">
+          <span class="guideline-code">1.4.12</span>
+          <h2 class="guideline-title">Text Spacing</h2>
+        </div>
+        <p class="guideline-rule">When users override text spacing via a browser extension or user stylesheet, no content or functionality should break. This is about writing CSS that doesn't snap under spacing pressure.</p>
+        <hr class="guideline-divider" />
+        <div class="do-dont">
+          <div class="do-block"><p class="do-label">✓ Do</p>Use <code>min-height</code> instead of <code>height</code> on any element containing text; allow containers to grow naturally when spacing increases</div>
+          <div class="dont-block"><p class="dont-label">✗ Don't</p>Set fixed heights on text containers, use <code>overflow: hidden</code> on elements with text, or hardcode line heights that can't flex</div>
+        </div>
+        <div class="guideline-impl">
+          <span class="impl-label">Implement</span>
+          <span>Test by injecting this CSS override: <code>line-height: 1.5 !important; letter-spacing: 0.12em !important; word-spacing: 0.16em !important; p &#123; margin-bottom: 2em !important; &#125;</code> — verify no text is clipped or overlapping.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- O: Operable -->
+    <div class="pour-section">
+      <div class="pour-header">
+        <span class="pour-letter">O</span>
+        <span class="pour-name">Operable</span>
+        <span class="pour-count">5 criteria</span>
+      </div>
+
+      <div class="guideline">
+        <div class="guideline-head">
+          <span class="guideline-code">2.1.2</span>
+          <h2 class="guideline-title">No Keyboard Trap</h2>
+        </div>
+        <p class="guideline-rule">If keyboard focus can move into a component, it must be able to move out — using standard keys (Tab, Shift+Tab, Escape). Modal dialogs are the classic trap. When a modal opens, focus must be managed correctly and returned to the trigger on close.</p>
+        <hr class="guideline-divider" />
+        <div class="do-dont">
+          <div class="do-block"><p class="do-label">✓ Do</p>Implement focus trapping inside open modals (Tab cycles within), Escape to close, and focus return to the trigger element on close</div>
+          <div class="dont-block"><p class="dont-label">✗ Don't</p>Open modals, drawers, or custom widgets without managing focus — keyboard users will be stuck behind the overlay or lost after closing</div>
+        </div>
+        <div class="guideline-impl">
+          <span class="impl-label">Implement</span>
+          <span>Use a focus trap utility for all modal dialogs and drawers. On open: move focus to first focusable element inside. On close: return focus to the element that triggered the open. Tab/Shift+Tab must cycle only within the open modal.</span>
+        </div>
+      </div>
+
+      <div class="guideline">
+        <div class="guideline-head">
+          <span class="guideline-code">2.1.4</span>
+          <h2 class="guideline-title">Character Key Shortcuts</h2>
+        </div>
+        <p class="guideline-rule">If single-character keyboard shortcuts (a letter, number, or punctuation key alone — no modifier) are implemented, users must be able to turn them off or remap them. They conflict with screen reader and speech input commands.</p>
+        <hr class="guideline-divider" />
+        <div class="do-dont">
+          <div class="do-block"><p class="do-label">✓ Do</p>Require at least one modifier key (Ctrl, Alt, Cmd) for all keyboard shortcuts; or provide a settings toggle to disable single-key shortcuts</div>
+          <div class="dont-block"><p class="dont-label">✗ Don't</p>Implement shortcuts that fire on a single letter or number key without any modifier — they will clash with screen reader navigation commands</div>
+        </div>
+        <div class="guideline-impl">
+          <span class="impl-label">Implement</span>
+          <span>Audit all <code>keydown</code>/<code>keyup</code> listeners. Any that respond to a single character key without a modifier (Ctrl/Alt/Meta) need either a modifier added or a user-facing toggle to disable them.</span>
+        </div>
+      </div>
+
+      <div class="guideline">
+        <div class="guideline-head">
+          <span class="guideline-code">2.4.1</span>
+          <h2 class="guideline-title">Bypass Blocks</h2>
+        </div>
+        <p class="guideline-rule">Keyboard users must be able to skip past repeated content blocks — navigation, headers, sidebars — to reach the main content directly. Without this, every page requires dozens of Tab presses before reaching the actual content.</p>
+        <hr class="guideline-divider" />
+        <div class="do-dont">
+          <div class="do-block"><p class="do-label">✓ Do</p>Implement a "Skip to main content" link as the very first focusable element on every page; use correct ARIA landmark roles throughout</div>
+          <div class="dont-block"><p class="dont-label">✗ Don't</p>Hide or remove skip links because they look odd visually — make them visible on focus, invisible otherwise</div>
+        </div>
+        <div class="guideline-impl">
+          <span class="impl-label">Implement</span>
+          <span>Add <code>&lt;a href="#main-content" class="skip-link"&gt;Skip to main content&lt;/a&gt;</code> as the first element in <code>&lt;body&gt;</code>. Style it off-screen by default, visible on <code>:focus</code>. Add <code>id="main-content"</code> to the <code>&lt;main&gt;</code> element. Use <code>&lt;nav&gt;</code>, <code>&lt;main&gt;</code>, <code>&lt;aside&gt;</code>, <code>&lt;header&gt;</code>, <code>&lt;footer&gt;</code> landmark elements correctly.</span>
+        </div>
+      </div>
+
+      <div class="guideline">
+        <div class="guideline-head">
+          <span class="guideline-code">2.5.2</span>
+          <h2 class="guideline-title">Pointer Cancellation</h2>
+        </div>
+        <p class="guideline-rule">Actions should fire on the up-event (pointer release), not the down-event (pointer press). This gives users a chance to cancel by moving the pointer away before releasing — a critical safety net for accidental touches.</p>
+        <hr class="guideline-divider" />
+        <div class="do-dont">
+          <div class="do-block"><p class="do-label">✓ Do</p>Use <code>click</code> events for triggering actions — they fire on pointer up and include built-in cancellation behaviour</div>
+          <div class="dont-block"><p class="dont-label">✗ Don't</p>Use <code>mousedown</code>, <code>pointerdown</code>, or <code>touchstart</code> to trigger irreversible or destructive actions</div>
+        </div>
+        <div class="guideline-impl">
+          <span class="impl-label">Implement</span>
+          <span>Audit all interactive elements for <code>mousedown</code> / <code>pointerdown</code> / <code>touchstart</code> event listeners that trigger actions. Replace with <code>click</code> events. Exception: down-events are permitted for drag operations, piano keys, or other cases where the press itself is the interaction.</span>
+        </div>
+      </div>
+
+      <div class="guideline">
+        <div class="guideline-head">
+          <span class="guideline-code">2.4.2</span>
+          <h2 class="guideline-title">Page Titled</h2>
+        </div>
+        <p class="guideline-rule">Every page or view must have a descriptive title that identifies its purpose. Screen readers announce the page title on load — it's how users confirm they've landed in the right place.</p>
+        <hr class="guideline-divider" />
+        <div class="do-dont">
+          <div class="do-block"><p class="do-label">✓ Do</p>Set a unique, descriptive <code>&lt;title&gt;</code> for every page — format: "Page Name — Product Name" or "Step 2 of 4: Shipping — Checkout"</div>
+          <div class="dont-block"><p class="dont-label">✗ Don't</p>Use the same title on every page, leave it as the app name alone, or use the default framework placeholder</div>
+        </div>
+        <div class="guideline-impl">
+          <span class="impl-label">Implement</span>
+          <span>In SPAs, update <code>document.title</code> on every route change. Format: specific page context first, then product name (e.g. "Invoice #1042 — Billing — Acme App"). Never leave the title as just the product name across all pages.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- U: Understandable -->
+    <div class="pour-section">
+      <div class="pour-header">
+        <span class="pour-letter">U</span>
+        <span class="pour-name">Understandable</span>
+        <span class="pour-count">3 criteria</span>
+      </div>
+
+      <div class="guideline">
+        <div class="guideline-head">
+          <span class="guideline-code">3.1.1</span>
+          <h2 class="guideline-title">Language of Page</h2>
+        </div>
+        <p class="guideline-rule">The primary language of each page must be declared in the HTML <code>lang</code> attribute. Screen readers use this to select the correct pronunciation engine — the wrong language setting produces garbled output.</p>
+        <hr class="guideline-divider" />
+        <div class="do-dont">
+          <div class="do-block"><p class="do-label">✓ Do</p>Set the correct <code>lang</code> attribute on the <code>&lt;html&gt;</code> element of every page — e.g. <code>lang="en"</code>, <code>lang="hi"</code>, <code>lang="de"</code></div>
+          <div class="dont-block"><p class="dont-label">✗ Don't</p>Leave the <code>lang</code> attribute missing, empty, or set to the wrong language — and never default to <code>lang="en"</code> on non-English pages</div>
+        </div>
+        <div class="guideline-impl">
+          <span class="impl-label">Implement</span>
+          <span>Every HTML document must have <code>&lt;html lang="xx"&gt;</code> where <code>xx</code> is a valid BCP 47 language tag. In multi-language apps, set <code>lang</code> dynamically on route change to match the current locale.</span>
+        </div>
+      </div>
+
+      <div class="guideline">
+        <div class="guideline-head">
+          <span class="guideline-code">3.1.2</span>
+          <h2 class="guideline-title">Language of Parts</h2>
+        </div>
+        <p class="guideline-rule">When content switches language mid-page — a French quote in an English document, a Spanish product name in an English interface — the language change must be marked up so screen readers switch pronunciation correctly.</p>
+        <hr class="guideline-divider" />
+        <div class="do-dont">
+          <div class="do-block"><p class="do-label">✓ Do</p>Wrap any inline content in a different language with the correct <code>lang</code> attribute — e.g. <code>&lt;span lang="fr"&gt;Bonjour&lt;/span&gt;</code></div>
+          <div class="dont-block"><p class="dont-label">✗ Don't</p>Leave foreign language strings unmarked — the screen reader will attempt to pronounce them in the page's primary language, producing incorrect output</div>
+        </div>
+        <div class="guideline-impl">
+          <span class="impl-label">Implement</span>
+          <span>Coordinate with the content team to identify all language switches in copy. Apply <code>lang="xx"</code> to the containing element — a <code>&lt;span&gt;</code>, <code>&lt;p&gt;</code>, or <code>&lt;blockquote&gt;</code> as appropriate. This does not apply to proper nouns or technical terms.</span>
+        </div>
+      </div>
+
+      <div class="guideline">
+        <div class="guideline-head">
+          <span class="guideline-code">3.2.1</span>
+          <h2 class="guideline-title">On Focus</h2>
+        </div>
+        <p class="guideline-rule">When a UI element receives keyboard or pointer focus, it must not automatically trigger a context change — no navigation, no form submission, no content shifting. Focus means "I'm here," not "go."</p>
+        <hr class="guideline-divider" />
+        <div class="do-dont">
+          <div class="do-block"><p class="do-label">✓ Do</p>Trigger context changes (navigation, submission, popups) only on explicit user actions — click, Enter key, or Space bar</div>
+          <div class="dont-block"><p class="dont-label">✗ Don't</p>Attach navigation or modal-open logic to <code>focus</code> or <code>mouseenter</code> events alone — these fire without the user consciously choosing an action</div>
+        </div>
+        <div class="guideline-impl">
+          <span class="impl-label">Implement</span>
+          <span>Audit all <code>focus</code> and <code>blur</code> event listeners. None should trigger navigation, form submission, or significant layout changes. Use <code>click</code> or <code>keydown</code> (Enter/Space) for intentional actions instead.</span>
+        </div>
+      </div>
+
+      <div class="guideline">
+        <div class="guideline-head">
+          <span class="guideline-code">3.2.2</span>
+          <h2 class="guideline-title">On Input</h2>
+        </div>
+        <p class="guideline-rule">Changing a form control's value — selecting a radio button, choosing a dropdown option, ticking a checkbox — must not automatically trigger a context change unless the user was warned in advance.</p>
+        <hr class="guideline-divider" />
+        <div class="do-dont">
+          <div class="do-block"><p class="do-label">✓ Do</p>Require an explicit submit action after form input changes; if auto-advance is genuinely needed, warn the user in the field label</div>
+          <div class="dont-block"><p class="dont-label">✗ Don't</p>Auto-submit forms, auto-navigate to another page, or open modals when a user selects a radio button or changes a dropdown</div>
+        </div>
+        <div class="guideline-impl">
+          <span class="impl-label">Implement</span>
+          <span>Audit all <code>change</code> and <code>input</code> event listeners on form controls. None should trigger navigation or submission. Exception: date pickers that auto-advance between day/month/year fields are permitted if the label explains the behaviour ("selecting a month will advance to day").</span>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /tab-dev -->
+
+  <!-- ════════════════════════════════════════
+       TAB 4 · CONTENT
+  ════════════════════════════════════════ -->
+  <div class="tab-panel" id="tab-content">
+
+    <div class="tab-intro">
+      <span class="tab-intro-icon">✦</span>
+      <div>
+        <p class="tab-intro-title">Content criteria</p>
+        <p class="tab-intro-desc">Owned by writers, editors, media producers, and content strategists. Some criteria are shared — the purple "Your part" block on split cards tells you exactly what content is responsible for.</p>
+      </div>
+    </div>
+
+    <div class="legend">
+      <div class="legend-item"><span class="legend-swatch" style="background:var(--do-bg);border:1px solid var(--do-border)"></span> Do this</div>
+      <div class="legend-item"><span class="legend-swatch" style="background:var(--dont-bg);border:1px solid var(--dont-border)"></span> Don't do this</div>
+      <div class="legend-item"><span class="legend-swatch" style="background:var(--split-bg);border:1px solid var(--split-border)"></span> Your part (split criterion)</div>
+      <div class="legend-item"><span class="legend-swatch" style="background:var(--new-bg);border:1px solid var(--new-border)"></span> New in WCAG 2.2</div>
+    </div>
+
+    <!-- P: Perceivable — Media -->
+    <div class="pour-section">
+      <div class="pour-header">
+        <span class="pour-letter">P</span>
+        <span class="pour-name">Perceivable — Media</span>
+        <span class="pour-count">5 criteria</span>
+      </div>
+
+      <div class="guideline">
+        <div class="guideline-head">
+          <span class="guideline-code">1.2.1</span>
+          <h2 class="guideline-title">Audio-only and Video-only (Prerecorded)</h2>
+        </div>
+        <p class="guideline-rule">Prerecorded audio-only content (podcasts, voice recordings) needs a text transcript. Prerecorded video-only content (silent walkthroughs, animations) needs either a transcript or an audio description track narrating what's happening visually.</p>
+        <hr class="guideline-divider" />
+        <div class="do-dont">
+          <div class="do-block"><p class="do-label">✓ Do</p>Write accurate transcripts for all audio-only content; for silent video, write a descriptive text alternative covering all meaningful visual information</div>
+          <div class="dont-block"><p class="dont-label">✗ Don't</p>Publish audio or video content without a text alternative — users who are deaf, hard of hearing, or in a silent environment have no access to the information</div>
+        </div>
+      </div>
+
+      <div class="guideline">
+        <div class="guideline-head">
+          <span class="guideline-code">1.2.2</span>
+          <h2 class="guideline-title">Captions (Prerecorded)</h2>
+        </div>
+        <p class="guideline-rule">Every prerecorded video that contains audio must have synchronised captions. Auto-generated captions alone are not sufficient — they must be reviewed, corrected, and include speaker identification and meaningful non-speech sounds.</p>
+        <hr class="guideline-divider" />
+        <div class="do-dont">
+          <div class="do-block"><p class="do-label">✓ Do</p>Review and correct auto-captions before publishing; include speaker names and notations like [applause] or [alarm sounds] where they carry meaning</div>
+          <div class="dont-block"><p class="dont-label">✗ Don't</p>Publish auto-generated captions without review — errors in speech recognition can make captions misleading or meaningless</div>
+        </div>
+      </div>
+
+      <div class="guideline">
+        <div class="guideline-head">
+          <span class="guideline-code">1.2.3</span>
+          <h2 class="guideline-title">Audio Description or Media Alternative</h2>
+        </div>
+        <p class="guideline-rule">Prerecorded video must either have an audio description track narrating meaningful visual content, or a full text alternative that describes both the audio and the visual content in full.</p>
+        <hr class="guideline-divider" />
+        <div class="do-dont">
+          <div class="do-block"><p class="do-label">✓ Do</p>Write audio description scripts that narrate visual information not conveyed in the dialogue — what's on screen, what people are doing, relevant text shown visually</div>
+          <div class="dont-block"><p class="dont-label">✗ Don't</p>Assume the dialogue alone conveys everything — key information shown visually (charts, demonstrations, text on screen) is invisible to users who can't see the video</div>
+        </div>
+      </div>
+
+      <div class="guideline">
+        <div class="guideline-head">
+          <span class="guideline-code">1.2.4</span>
+          <h2 class="guideline-title">Captions (Live)</h2>
+        </div>
+        <p class="guideline-rule">Live audio-video content — webinars, live streams, broadcasts, virtual events — must have real-time captions. Pre-prepared transcripts are not a substitute for synchronised live captions.</p>
+        <hr class="guideline-divider" />
+        <div class="do-dont">
+          <div class="do-block"><p class="do-label">✓ Do</p>Arrange CART (Communication Access Realtime Translation) or an equivalent live captioning service for any streamed or broadcast event</div>
+          <div class="dont-block"><p class="dont-label">✗ Don't</p>Rely on auto-captions for live events or assume a post-event transcript satisfies this — it must be synchronised in real time</div>
+        </div>
+      </div>
+
+      <div class="guideline">
+        <div class="guideline-head">
+          <span class="guideline-code">1.2.5</span>
+          <h2 class="guideline-title">Audio Description (Prerecorded)</h2>
+        </div>
+        <p class="guideline-rule">All prerecorded video must have an audio description track — a narration of meaningful visual information that isn't already conveyed in the main audio. This is separate from the captions requirement.</p>
+        <hr class="guideline-divider" />
+        <div class="do-dont">
+          <div class="do-block"><p class="do-label">✓ Do</p>Script and produce audio descriptions that fit into natural pauses in the main audio; describe actions, scene changes, on-screen text, and visual context</div>
+          <div class="dont-block"><p class="dont-label">✗ Don't</p>Describe what's already said in the dialogue — audio descriptions fill the visual gaps, not repeat the speech</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- P: Perceivable — Split criteria -->
+    <div class="pour-section">
+      <div class="pour-header">
+        <span class="pour-letter">P</span>
+        <span class="pour-name">Perceivable — Shared with Design &amp; Dev</span>
+        <span class="pour-count">2 criteria</span>
+      </div>
+
+      <div class="guideline">
+        <div class="guideline-head">
+          <span class="guideline-code">1.1.1</span>
+          <h2 class="guideline-title">Non-text Content <span class="badge-split">Shared</span></h2>
+        </div>
+        <p class="guideline-rule">Every meaningful image, icon, chart, and illustration needs a text alternative. Design flags which images are meaningful vs. decorative — content writes the actual alt text words.</p>
+        <hr class="guideline-divider" />
+        <div class="do-dont">
+          <div class="do-block"><p class="do-label">✓ Do</p>Write alt text that conveys the purpose or content of the image — concise, specific, and written as if describing it to someone on the phone</div>
+          <div class="dont-block"><p class="dont-label">✗ Don't</p>Start alt text with "Image of…" or "Photo of…" — screen readers already announce it's an image; use that space for the actual description</div>
+        </div>
+        <div class="guideline-owns">
+          <span class="owns-label">Your part</span>
+          <span>Write the alt text copy for all meaningful images. Design will flag which images need alt text and which are decorative. Aim for one clear sentence — what does the image communicate, not just what it shows.</span>
+        </div>
+      </div>
+
+      <div class="guideline">
+        <div class="guideline-head">
+          <span class="guideline-code">1.3.3</span>
+          <h2 class="guideline-title">Sensory Characteristics <span class="badge-split">Shared</span></h2>
+        </div>
+        <p class="guideline-rule">Instructional copy must never reference UI elements only by their appearance, position, color, or sound. "Tap the green button" fails for colorblind users. "Click the icon on the right" fails for screen reader users.</p>
+        <hr class="guideline-divider" />
+        <div class="do-dont">
+          <div class="do-block"><p class="do-label">✓ Do</p>Reference elements by their label or function — "tap Save," "select your country from the dropdown," "use the Search field"</div>
+          <div class="dont-block"><p class="dont-label">✗ Don't</p>Write instructions like "tap the blue button," "use the panel on the left," or "click the large icon at the top"</div>
+        </div>
+        <div class="guideline-owns">
+          <span class="owns-label">Your part</span>
+          <span>Audit all instructional, help, and onboarding copy for references to UI by color, shape, size, or position. Replace with references to the element's visible label or function.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- O + U: Shared criteria -->
+    <div class="pour-section">
+      <div class="pour-header">
+        <span class="pour-letter">O · U</span>
+        <span class="pour-name">Operable &amp; Understandable — Shared</span>
+        <span class="pour-count">4 criteria</span>
+      </div>
+
+      <div class="guideline">
+        <div class="guideline-head">
+          <span class="guideline-code">2.4.4</span>
+          <h2 class="guideline-title">Link Purpose (In Context) <span class="badge-split">Shared</span></h2>
+        </div>
+        <p class="guideline-rule">Link labels must make sense in context. Screen reader users often navigate by scanning a list of all links on a page — "Read more" repeated six times tells them nothing. The link text itself (or its immediate context) must describe where it goes or what it does.</p>
+        <hr class="guideline-divider" />
+        <div class="do-dont">
+          <div class="do-block"><p class="do-label">✓ Do</p>Write link labels that describe the destination or action — "Download the Q3 report," "Read the full case study," "Book a 30-minute call"</div>
+          <div class="dont-block"><p class="dont-label">✗ Don't</p>Use "Read more," "Click here," "Learn more," or "See details" as standalone link text — they are meaningless out of context</div>
+        </div>
+        <div class="guideline-owns">
+          <span class="owns-label">Your part</span>
+          <span>Audit all CTAs, inline links, and navigation labels. Every link must be self-describing. If context is needed to understand a link, write it into the link text itself — don't rely on surrounding copy.</span>
+        </div>
+      </div>
+
+      <div class="guideline">
+        <div class="guideline-head">
+          <span class="guideline-code">3.1.2</span>
+          <h2 class="guideline-title">Language of Parts <span class="badge-split">Shared</span></h2>
+        </div>
+        <p class="guideline-rule">When content switches language mid-page — a French quote, a Spanish product name, a phrase in another script — the language change must be marked up in code. Content needs to flag these switches so dev can implement the correct markup.</p>
+        <hr class="guideline-divider" />
+        <div class="do-dont">
+          <div class="do-block"><p class="do-label">✓ Do</p>Clearly mark any non-primary-language content in your copy deck so dev knows to apply the correct <code>lang</code> attribute</div>
+          <div class="dont-block"><p class="dont-label">✗ Don't</p>Silently include foreign language phrases without flagging them — dev cannot reliably identify language switches from reading the copy alone</div>
+        </div>
+        <div class="guideline-owns">
+          <span class="owns-label">Your part</span>
+          <span>Flag all language switches in your copy with a note to dev — e.g. "the following phrase is French." This doesn't apply to proper nouns, brand names, or internationally recognised technical terms.</span>
+        </div>
+      </div>
+
+      <div class="guideline">
+        <div class="guideline-head">
+          <span class="guideline-code">3.3.2</span>
+          <h2 class="guideline-title">Labels or Instructions <span class="badge-split">Shared</span></h2>
+        </div>
+        <p class="guideline-rule">Every form field needs a clear, persistent label and — where the format isn't obvious — an instruction. Design places the label; content writes the words. Vague labels ("Details," "Info") create friction for all users and confusion for screen reader users.</p>
+        <hr class="guideline-divider" />
+        <div class="do-dont">
+          <div class="do-block"><p class="do-label">✓ Do</p>Write specific, plain-language labels — "Date of birth (DD/MM/YYYY)," "Mobile number," "Company registration number"</div>
+          <div class="dont-block"><p class="dont-label">✗ Don't</p>Use single-word labels like "Name" for a field that expects a full legal name, or leave format instructions out of fields with strict validation rules</div>
+        </div>
+        <div class="guideline-owns">
+          <span class="owns-label">Your part</span>
+          <span>Supply final label text and format instructions for every form field in the product. If a field has validation rules (max length, required format, accepted characters), that context belongs in the label or helper text — not just in the error message.</span>
+        </div>
+      </div>
+
+      <div class="guideline">
+        <div class="guideline-head">
+          <span class="guideline-code">3.3.3</span>
+          <h2 class="guideline-title">Error Suggestion <span class="badge-split">Shared</span></h2>
+        </div>
+        <p class="guideline-rule">When validation fails and a fix is known, the suggestion must be surfaced in the UI. Design defines where it appears; content writes the words. "Invalid input" is an error identification. "Enter a date in DD/MM/YYYY format" is an error suggestion — and it's what this criterion requires.</p>
+        <hr class="guideline-divider" />
+        <div class="do-dont">
+          <div class="do-block"><p class="do-label">✓ Do</p>Write specific, actionable error suggestions for every common failure scenario — what went wrong and exactly how to fix it</div>
+          <div class="dont-block"><p class="dont-label">✗ Don't</p>Use generic messages like "Invalid input," "Error," or "Something went wrong" — they tell the user nothing about how to proceed</div>
+        </div>
+        <div class="guideline-owns">
+          <span class="owns-label">Your part</span>
+          <span>Write error suggestion copy for every field and every common error scenario — empty required field, wrong format, value out of range, already in use. Coordinate with design on which errors surface inline vs. in a summary.</span>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /tab-content -->
+
+
+  <!-- ── Footer ── -->
+  <footer class="page-footer">
+    <span>WCAG 2.2 · AA Compliance · 56 of 56 criteria documented</span>
+    <span>A11ySidekick · Version 1.0 · 2026</span>
+  </footer>
+
+</div>
+
+<script>
+  function switchTab(name) {
+    // Update buttons
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      const isActive = btn.dataset.tab === name;
+      btn.classList.toggle('active', isActive);
+      btn.setAttribute('aria-selected', isActive);
+    });
+    // Update panels
+    document.querySelectorAll('.tab-panel').forEach(panel => {
+      panel.classList.toggle('active', panel.id === 'tab-' + name);
+    });
+  }
+</script>
+
+</body>
+</html>
