@@ -570,6 +570,6 @@ These are next-phase features.
 
 ## File output
 
-Single file: `a11y-sidekick.html`
+Single file: `index.html` (formerly `a11y-sidekick.html`)
 No external dependencies except Google Fonts (already in the existing file).
 No build step.

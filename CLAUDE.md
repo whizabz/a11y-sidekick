@@ -4,16 +4,27 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project overview
 
-A11ySidekick is a **single static HTML file** (`a11y-sidekick.html`) with no build step, no dependencies beyond Google Fonts, and all CSS/JS inline. To preview, open the file directly in a browser or serve with any static file server:
+A11ySidekick is a **single static HTML file** ([`index.html`](index.html)) with no build step, no dependencies beyond Google Fonts, and all CSS/JS inline. To preview, open the file directly in a browser or serve with any static file server:
 
 ```bash
-npx serve .        # then open http://localhost:3000/a11y-sidekick.html
+npx serve .        # then open http://localhost:3000/index.html
 python -m http.server 5500
 ```
 
+## Repository layout
+
+| File | Role |
+|---|---|
+| `index.html` | Main app (~3,300 lines) — the complete product |
+| `wcag-guidelines.html` | Earlier reference-only version; superseded by the WCAG by Role panel in `index.html` |
+| `a11y-sidekick-spec.md` | Original build spec |
+| `how-i-built-this.html` | Companion page — build story / write-up |
+
+Deployed on GitHub Pages at `https://whizabz.github.io/a11y-sidekick/` (serves `index.html` at the site root).
+
 ## Architecture
 
-Everything lives in one file in this order:
+Everything lives in `index.html` in this order:
 
 ```
 <style>    Kami design tokens + all component CSS
@@ -91,24 +102,22 @@ const state = {
 
 All click handling for `#checklist-output` (state buttons, role filter, trigger filter, edit icon) is delegated to a single listener using `.closest()`.
 
-## Design system (Kami tokens)
+## Design system (Kami)
 
-Primary tokens used throughout — do not hardcode colours:
+Follow `KAMI-DESIGN.md`. Primary tokens in `index.html`:
 
 ```
---bg / --surface / --surface-alt    page + card backgrounds
---accent (#1B365D) / --accent-mid / --accent-soft    primary blue scale
---ink / --ink-mid / --ink-mute      text hierarchy
---border / --border-soft            dividers
---do-bg/border/ink   green   (✓ Do blocks)
---dont-bg/border/ink red     (✗ Don't blocks)
---doc-bg/border/ink  amber   (Document for dev blocks)
---impl-bg/border/ink green-grey (Implement & test blocks)
---new-bg/border/ink  blue    (WCAG 2.2 New badges)
---split-bg/border/ink purple (Content "Your part" blocks)
+--brand / --brand-light             ink-blue accent (#1B365D) — only chromatic color
+--parchment / --ivory / --warm-sand surface hierarchy
+--near-black / --dark-warm / --olive / --stone   text (four levels)
+--border / --border-soft / --ring-warm / --ring-deep
+--tag-light / --tag-standard / --tag-mid          solid tag tints (no rgba backgrounds)
+--focus (#3898ec)                   focus rings only
 ```
 
-Fonts: **Newsreader** serif (headings, titles, serif UI) + **Inter** sans (body, labels, chips).
+Typography: **Newsreader** serif 400/500 for English body + headings. **Inter** sans for UI only (buttons, chips, labels). No italic. Line-height ≤ 1.55 for body. Serif headings weight 500 only.
+
+Semantic blocks (Do/Don't/doc/impl) use warm solid hex — not a second accent color.
 
 ## Intentional deviations from spec
 

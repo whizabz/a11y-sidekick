@@ -1,8 +1,8 @@
 # A11ySidekick
 
-A focused WCAG 2.2 AA checklist for designers, developers, and content teams — delivered as a single, zero-dependency HTML file.
+A focused WCAG 2.2 AA checklist for designers, developers, and content teams — delivered as a single, zero-dependency HTML file ([`index.html`](index.html)).
 
-**[→ Open A11ySidekick](https://whizabz.github.io/a11y-sidekick/a11y-sidekick.html)**
+**[→ Open A11ySidekick](https://whizabz.github.io/a11y-sidekick/)**
 
 ---
 
@@ -47,7 +47,9 @@ No build step needed. Open the file directly or serve it:
 
 ```bash
 npx serve .
-# open http://localhost:3000/a11y-sidekick.html
+# open http://localhost:3000/index.html
+
+# or open index.html directly in a browser
 ```
 
 ---
