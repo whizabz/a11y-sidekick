@@ -1343,25 +1343,31 @@
     }
 
     .selection-section {
-      display: grid;
-      gap: 7px;
+      margin-top: 2px;
     }
 
-    .selection-row {
+    .selection-filters,
+    .sticky-filter-chips {
       display: flex;
+      flex-wrap: wrap;
       align-items: center;
-      gap: 10px;
+      gap: 6px;
     }
 
-    .selection-label {
+    .selection-chip-group {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .selection-divider {
       font-family: var(--sans);
-      font-size: 10px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
+      font-size: 12px;
       color: var(--stone);
-      flex-shrink: 0;
-      width: 62px;
+      user-select: none;
+      padding: 0 2px;
+      line-height: 1;
     }
 
     .sticky-filter-bar {
@@ -1385,17 +1391,8 @@
     }
 
     .sticky-filter-chips {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
       max-width: 1080px;
       margin: 0 auto;
-    }
-
-    .selection-chips-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
     }
 
     /* ── Edit modal ── */
@@ -1769,7 +1766,7 @@
             <div class="section-title-row">
               <h2 class="section-title">Build a focused checklist for one screen</h2>
             </div>
-            <p class="section-copy">Name the screen, mark its structure and UI elements, and A11ySidekick will assemble the WCAG 2.2 AA criteria that apply. The always-on criteria are included every time.</p>
+            <p class="section-copy">Name the screen, mark its structure and UI elements, and A11ySidekick will assemble the WCAG 2.2 AA criteria that apply. Global criteria are included every time.</p>
           </div>
 
           <form id="filter-form" class="panel-grid">
@@ -3115,6 +3112,7 @@
 
 <script>
   const TRIGGER_LABELS = {
+    always: 'Global',
     navigation: 'Has navigation', sticky: 'Has sticky element', nonlinear: 'Non-linear layout',
     overlay: 'Has overlay', timeout: 'Has timeout or session', orientation: 'Orientation-sensitive',
     text: 'Text', button: 'Button', link: 'Link', formfield: 'Form field',
@@ -3131,7 +3129,7 @@
   };
 
   const LAYER_LABELS = {
-    always: 'Always on',
+    always: 'Global',
     structure: 'Structure',
     element: 'Element'
   };
@@ -3313,7 +3311,7 @@
 
   function getMatchingTriggers(criterion) {
     if (criterion.layer === 'always') {
-      return [{ value: 'always', label: 'Always applies' }];
+      return [{ value: 'always', label: TRIGGER_LABELS.always }];
     }
 
     const matches = [];
@@ -3360,6 +3358,24 @@
   function renderTriggerFilterChip(value) {
     const active = state.activeTrigger === value ? 'active' : '';
     return `<button class="trigger-filter-chip ${active}" data-trigger-filter="${escapeHtml(value)}" type="button">${escapeHtml(TRIGGER_LABELS[value] || value)}</button>`;
+  }
+
+  function renderSelectionFilterChips() {
+    const groups = [
+      `<span class="selection-chip-group">${renderTriggerFilterChip('always')}</span>`,
+    ];
+
+    const structureChips = Array.from(state.selectedStructure).map(renderTriggerFilterChip).join('');
+    if (structureChips) {
+      groups.push(`<span class="selection-chip-group">${structureChips}</span>`);
+    }
+
+    const elementChips = Array.from(state.selectedElements).map(renderTriggerFilterChip).join('');
+    if (elementChips) {
+      groups.push(`<span class="selection-chip-group">${elementChips}</span>`);
+    }
+
+    return groups.join('<span class="selection-divider" aria-hidden="true">|</span>');
   }
 
   function applyTriggerFilter(value) {
@@ -3520,9 +3536,9 @@
   function updateStickyFilterBar() {
     const bar = document.getElementById('sticky-filter-bar');
     const chips = bar.querySelector('.sticky-filter-chips');
-    const html = getSelectedTriggerValues().map(renderTriggerFilterChip).join('');
+    const html = renderSelectionFilterChips();
 
-    if (!html || !state.generatedIds.length) {
+    if (!state.generatedIds.length) {
       bar.classList.remove('is-visible');
       bar.setAttribute('aria-hidden', 'true');
       chips.innerHTML = '';
@@ -3574,14 +3590,10 @@
 
     const { done: doneCount, total: reviewable } = getReviewProgress(criteria);
 
-    // Selection chips inside the progress card (also act as trigger filters)
-    const structureChips = Array.from(state.selectedStructure).map(renderTriggerFilterChip).join('');
-    const elementChips = Array.from(state.selectedElements).map(renderTriggerFilterChip).join('');
-    const selectionSectionHtml = (structureChips || elementChips) ? `
-      <div class="selection-section">
-        ${structureChips ? `<div class="selection-row"><span class="selection-label">Structure</span><div class="selection-chips-row">${structureChips}</div></div>` : ''}
-        ${elementChips  ? `<div class="selection-row"><span class="selection-label">Elements</span><div class="selection-chips-row">${elementChips}</div></div>`  : ''}
-      </div>` : '';
+    const selectionSectionHtml = `
+      <div class="selection-section" role="toolbar" aria-label="Filter checklist by selection">
+        <div class="selection-filters">${renderSelectionFilterChips()}</div>
+      </div>`;
 
     // Apply trigger filter to criteria before grouping
     const triggerFiltered = state.activeTrigger
