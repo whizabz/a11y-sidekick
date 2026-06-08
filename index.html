@@ -1289,7 +1289,7 @@
       top: calc(100% + 6px);
       right: 0;
       z-index: 20;
-      min-width: 188px;
+      min-width: 168px;
       padding: 6px;
       background: var(--ivory);
       border: 1px solid var(--border);
@@ -1340,126 +1340,6 @@
 
     .export-toast[hidden] {
       display: none;
-    }
-
-    #figma-export-root {
-      position: fixed;
-      left: -10000px;
-      top: 0;
-      width: 640px;
-      pointer-events: none;
-    }
-
-    .figma-export-frame {
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-      width: 640px;
-      padding: 24px;
-      background: #faf9f5;
-      border: 1px solid #e8e6dc;
-      border-radius: 8px;
-      font-family: "Newsreader", Georgia, serif;
-      color: #141413;
-    }
-
-    .figma-export-header {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      padding-bottom: 16px;
-      border-bottom: 1px solid #e8e6dc;
-    }
-
-    .figma-export-title {
-      font-family: "Newsreader", Georgia, serif;
-      font-size: 22px;
-      font-weight: 500;
-      line-height: 1.25;
-      color: #1B365D;
-      margin: 0;
-    }
-
-    .figma-export-meta {
-      font-family: "Inter", Arial, sans-serif;
-      font-size: 13px;
-      font-weight: 400;
-      line-height: 1.4;
-      color: #6b6a64;
-      margin: 0;
-    }
-
-    .figma-export-role {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-
-    .figma-export-role-title {
-      font-family: "Inter", Arial, sans-serif;
-      font-size: 11px;
-      font-weight: 600;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      color: #6b6a64;
-      margin: 0;
-    }
-
-    .figma-export-cards {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    .figma-export-card {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      padding: 16px;
-      background: #faf9f5;
-      border: 1px solid #e8e6dc;
-      border-radius: 8px;
-    }
-
-    .figma-export-card-title {
-      font-family: "Newsreader", Georgia, serif;
-      font-size: 16px;
-      font-weight: 500;
-      line-height: 1.35;
-      color: #141413;
-      margin: 0;
-    }
-
-    .figma-export-code {
-      color: #1B365D;
-      margin-right: 6px;
-    }
-
-    .figma-export-chips {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-
-    .figma-export-chip {
-      display: inline-flex;
-      align-items: center;
-      min-height: 28px;
-      padding: 0 12px;
-      border-radius: 999px;
-      border: 1px solid #e8e6dc;
-      background: #e8e6dc;
-      color: #3d3d3a;
-      font-family: "Inter", Arial, sans-serif;
-      font-size: 12px;
-      font-weight: 500;
-      line-height: 1;
-    }
-
-    .figma-export-chip.is-reviewed {
-      border-color: #D6E1EE;
-      background: #E4ECF5;
-      color: #1B365D;
     }
 
     .selection-section {
@@ -3241,8 +3121,6 @@
   </div>
 </div>
 
-<div id="figma-export-root" aria-hidden="true"></div>
-
 <div id="export-toast" class="export-toast" role="status" aria-live="polite" hidden></div>
 
 <script>
@@ -3524,6 +3402,22 @@
     return s;
   }
 
+  const SVG_EXPORT = {
+    width: 640,
+    pad: 24,
+    bg: '#faf9f5',
+    border: '#e8e6dc',
+    brand: '#1B365D',
+    ink: '#141413',
+    stone: '#6b6a64',
+    darkWarm: '#3d3d3a',
+    chipBg: '#e8e6dc',
+    chipReviewedBg: '#E4ECF5',
+    chipReviewedBorder: '#D6E1EE',
+    serif: 'Newsreader, Georgia, serif',
+    sans: 'Inter, Arial, sans-serif',
+  };
+
   function formatExportTimestamp() {
     return new Intl.DateTimeFormat(undefined, {
       dateStyle: 'medium',
@@ -3532,97 +3426,165 @@
     }).format(new Date());
   }
 
-  function renderFigmaExportChip(trigger, reviewed) {
-    const mark = reviewed ? '✓ ' : '○ ';
-    const cls = reviewed ? 'figma-export-chip is-reviewed' : 'figma-export-chip';
-    return `<span class="${cls}">${escapeHtml(mark + trigger.label)}</span>`;
+  function svgEscape(text) {
+    return String(text)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
   }
 
-  function renderFigmaExportCard(criterion) {
+  function estimateSvgTextWidth(text, fontSize) {
+    return [...String(text)].reduce((width, ch) => width + (ch === ' ' ? fontSize * 0.28 : fontSize * 0.58), 0);
+  }
+
+  function wrapSvgText(text, maxWidth, fontSize) {
+    const words = String(text).split(/\s+/).filter(Boolean);
+    if (!words.length) return [];
+
+    const lines = [words[0]];
+    for (let i = 1; i < words.length; i += 1) {
+      const candidate = `${lines[lines.length - 1]} ${words[i]}`;
+      if (estimateSvgTextWidth(candidate, fontSize) > maxWidth) {
+        lines.push(words[i]);
+      } else {
+        lines[lines.length - 1] = candidate;
+      }
+    }
+    return lines;
+  }
+
+  function svgText(x, y, text, options = {}) {
+    const {
+      size = 13,
+      fill = SVG_EXPORT.ink,
+      weight = 400,
+      family = SVG_EXPORT.sans,
+    } = options;
+    return `<text x="${x}" y="${y}" fill="${fill}" font-family="${family}" font-size="${size}" font-weight="${weight}" dominant-baseline="hanging">${svgEscape(text)}</text>`;
+  }
+
+  function svgRoundedRect(x, y, width, height, fill, stroke) {
+    const rx = Math.min(8, height / 2);
+    return `<rect x="${x}" y="${y}" width="${width}" height="${height}" rx="${rx}" fill="${fill}" stroke="${stroke}" stroke-width="1"/>`;
+  }
+
+  function layoutSvgChipRow(chips, startX, startY, maxWidth) {
+    const chipHeight = 28;
+    const gap = 8;
+    const padX = 12;
+    const fontSize = 12;
+    const placed = [];
+    let x = startX;
+    let rowY = startY;
+
+    chips.forEach((chip) => {
+      const chipWidth = Math.ceil(estimateSvgTextWidth(chip.label, fontSize) + padX * 2);
+      if (x + chipWidth > startX + maxWidth && x > startX) {
+        x = startX;
+        rowY += chipHeight + gap;
+      }
+      placed.push({ x, y: rowY, width: chipWidth, height: chipHeight, label: chip.label, reviewed: chip.reviewed });
+      x += chipWidth + gap;
+    });
+
+    return {
+      placed,
+      height: placed.length ? rowY - startY + chipHeight : 0,
+    };
+  }
+
+  function buildSvgCardParts(criterion, x, y, width) {
+    const cardPad = 16;
+    const innerWidth = width - cardPad * 2;
+    const titleSize = 16;
+    const titleLineHeight = 22;
+    const parts = [];
+    const titleLines = wrapSvgText(`${criterion.id} ${criterion.title}`, innerWidth, titleSize);
+    let cursorY = y + cardPad;
+
+    titleLines.forEach((line, index) => {
+      if (index === 0 && line.startsWith(criterion.id)) {
+        const titleRest = line.slice(criterion.id.length).trimStart();
+        parts.push(
+          `<text x="${x + cardPad}" y="${cursorY}" font-family="${SVG_EXPORT.serif}" font-size="${titleSize}" font-weight="500" dominant-baseline="hanging">` +
+          `<tspan fill="${SVG_EXPORT.brand}">${svgEscape(criterion.id)}</tspan>` +
+          (titleRest ? `<tspan fill="${SVG_EXPORT.ink}"> ${svgEscape(titleRest)}</tspan>` : '') +
+          '</text>'
+        );
+      } else {
+        parts.push(svgText(x + cardPad, cursorY, line, { size: titleSize, weight: 500, family: SVG_EXPORT.serif }));
+      }
+      cursorY += titleLineHeight;
+    });
+
     const triggers = getMatchingTriggers(criterion);
-    const chips = triggers.map((t) => renderFigmaExportChip(t, isTriggerReviewed(criterion.id, t.value))).join('');
-    return `
-      <div class="figma-export-card">
-        <p class="figma-export-card-title">
-          <span class="figma-export-code">${escapeHtml(criterion.id)}</span>${escapeHtml(criterion.title)}
-        </p>
-        ${chips ? `<div class="figma-export-chips">${chips}</div>` : ''}
-      </div>
-    `;
+    const chips = triggers.map((trigger) => ({
+      label: `${isTriggerReviewed(criterion.id, trigger.value) ? '✓ ' : '○ '}${trigger.label}`,
+      reviewed: isTriggerReviewed(criterion.id, trigger.value),
+    }));
+
+    if (chips.length) {
+      cursorY += 8;
+      const chipLayout = layoutSvgChipRow(chips, x + cardPad, cursorY, innerWidth);
+      chipLayout.placed.forEach((chip) => {
+        const fill = chip.reviewed ? SVG_EXPORT.chipReviewedBg : SVG_EXPORT.chipBg;
+        const stroke = chip.reviewed ? SVG_EXPORT.chipReviewedBorder : SVG_EXPORT.border;
+        const textFill = chip.reviewed ? SVG_EXPORT.brand : SVG_EXPORT.darkWarm;
+        parts.push(svgRoundedRect(chip.x, chip.y, chip.width, chip.height, fill, stroke));
+        parts.push(svgText(chip.x + 12, chip.y + 8, chip.label, { size: 12, weight: 500, fill: textFill }));
+      });
+      cursorY += chipLayout.height;
+    }
+
+    const cardHeight = cursorY - y + cardPad;
+    return {
+      parts: [svgRoundedRect(x, y, width, cardHeight, SVG_EXPORT.bg, SVG_EXPORT.border), ...parts],
+      height: cardHeight,
+    };
   }
 
-  function renderFigmaExportRoot() {
+  function buildExportSvg() {
     const criteria = getGeneratedCriteria();
     const { done, total } = getReviewProgress(criteria);
     const exportedAt = formatExportTimestamp();
-    const roleSections = ['design', 'ddev', 'dev', 'content']
-      .map((role) => {
-        const items = criteria.filter((c) => c.role === role);
-        if (!items.length) return '';
-        return `
-          <div class="figma-export-role">
-            <p class="figma-export-role-title">${escapeHtml(ROLE_LABELS[role])}</p>
-            <div class="figma-export-cards">
-              ${items.map((criterion) => renderFigmaExportCard(criterion)).join('')}
-            </div>
-          </div>
-        `;
-      })
-      .join('');
+    const width = SVG_EXPORT.width;
+    const pad = SVG_EXPORT.pad;
+    const contentWidth = width - pad * 2;
+    const parts = [];
+    let y = pad;
 
-    return `
-      <div class="figma-export-frame">
-        <div class="figma-export-header">
-          <p class="figma-export-title">${escapeHtml(`A11ySidekick — ${state.lastScreenName}`)}</p>
-          <p class="figma-export-meta">${done}/${total} reviewed · WCAG 2.2 AA</p>
-          <p class="figma-export-meta">Exported ${escapeHtml(exportedAt)}</p>
-        </div>
-        ${roleSections}
-      </div>
-    `;
-  }
-
-  function mountFigmaExportRoot() {
-    const root = document.getElementById('figma-export-root');
-    root.innerHTML = renderFigmaExportRoot();
-    return root.querySelector('.figma-export-frame');
-  }
-
-  function clearFigmaExportRoot() {
-    document.getElementById('figma-export-root').innerHTML = '';
-  }
-
-  function buildFigmaExportText() {
-    const criteria = getGeneratedCriteria();
-    const { done, total } = getReviewProgress(criteria);
-    const selections = getSelectedTriggerValues().map((v) => TRIGGER_LABELS[v] || v).join(', ');
-    const lines = [
-      `A11ySidekick — ${state.lastScreenName}`,
-      `${done}/${total} reviewed · WCAG 2.2 AA`,
-      `Exported ${formatExportTimestamp()}`,
-      '',
-      `Selections: ${selections}`,
-      '',
-    ];
+    parts.push(svgText(pad, y, `A11ySidekick — ${state.lastScreenName}`, { size: 22, weight: 500, fill: SVG_EXPORT.brand, family: SVG_EXPORT.serif }));
+    y += 30;
+    parts.push(svgText(pad, y, `${done}/${total} reviewed · WCAG 2.2 AA`, { size: 13, fill: SVG_EXPORT.stone }));
+    y += 20;
+    parts.push(svgText(pad, y, `Exported ${exportedAt}`, { size: 13, fill: SVG_EXPORT.stone }));
+    y += 24;
+    parts.push(`<line x1="${pad}" y1="${y}" x2="${width - pad}" y2="${y}" stroke="${SVG_EXPORT.border}" stroke-width="1"/>`);
+    y += 20;
 
     ['design', 'ddev', 'dev', 'content'].forEach((role) => {
       const items = criteria.filter((c) => c.role === role);
       if (!items.length) return;
 
-      lines.push(ROLE_LABELS[role]);
+      parts.push(svgText(pad, y, ROLE_LABELS[role].toUpperCase(), { size: 11, weight: 600, fill: SVG_EXPORT.stone }));
+      y += 20;
+
       items.forEach((criterion) => {
-        const triggers = getMatchingTriggers(criterion);
-        const chipStatus = triggers.map((t) => {
-          const mark = isTriggerReviewed(criterion.id, t.value) ? '✓' : '○';
-          return `${mark} ${t.label}`;
-        }).join(', ');
-        lines.push(`${criterion.id} ${criterion.title}`);
-        lines.push(`  ${chipStatus}`);
+        const card = buildSvgCardParts(criterion, pad, y, contentWidth);
+        parts.push(...card.parts);
+        y += card.height + 10;
       });
-      lines.push('');
+
+      y += 10;
     });
 
-    return lines.join('\n').trim();
+    const totalHeight = y + pad;
+    return `<?xml version="1.0" encoding="UTF-8"?>\n` +
+      `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${totalHeight}" viewBox="0 0 ${width} ${totalHeight}">` +
+      `<rect width="${width}" height="${totalHeight}" rx="8" fill="${SVG_EXPORT.bg}" stroke="${SVG_EXPORT.border}" stroke-width="1"/>` +
+      parts.join('') +
+      '</svg>';
   }
 
   function buildExportCsv() {
@@ -3679,74 +3641,31 @@
     }, 2500);
   }
 
-  async function copyTextToClipboard(text) {
-    if (navigator.clipboard && window.isSecureContext) {
-      await navigator.clipboard.writeText(text);
-      return;
-    }
-
-    const textarea = document.createElement('textarea');
-    textarea.value = text;
-    textarea.setAttribute('readonly', '');
-    textarea.style.position = 'fixed';
-    textarea.style.left = '-9999px';
-    document.body.appendChild(textarea);
-    textarea.select();
-    const ok = document.execCommand('copy');
-    document.body.removeChild(textarea);
-    if (!ok) throw new Error('Copy failed');
+  function downloadBlobFile(blob, filename) {
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    link.style.display = 'none';
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
 
-  async function copyHtmlToClipboard(html) {
-    if (!navigator.clipboard || !window.isSecureContext) {
-      throw new Error('Clipboard unavailable');
-    }
-
-    await navigator.clipboard.write([
-      new ClipboardItem({ 'text/html': new Blob([html], { type: 'text/html' }) }),
-    ]);
-  }
-
-  async function copyChecklistForFigma() {
-    if (!state.generatedIds.length) {
-      showExportToast('Generate a checklist first');
-      return;
-    }
-
-    showExportToast('Preparing Figma export…');
-
-    let frameEl = null;
-    try {
-      frameEl = mountFigmaExportRoot();
-      if (!frameEl) throw new Error('Export DOM missing');
-
-      await document.fonts.ready;
-
-      const { generateFromElement } = await import('https://esm.sh/@magicpatterns/html-to-figma@1.0.4');
-      const html = await generateFromElement(frameEl, {
-        topLayerName: `A11ySidekick — ${state.lastScreenName}`,
-      });
-
-      await copyHtmlToClipboard(html);
-      showExportToast('Copied for Figma');
-    } catch {
-      showExportToast('Frames copy failed — try Copy text for Figma');
-    } finally {
-      clearFigmaExportRoot();
-    }
-  }
-
-  async function copyChecklistTextForFigma() {
+  function downloadChecklistSvg() {
     if (!state.generatedIds.length) {
       showExportToast('Generate a checklist first');
       return;
     }
 
     try {
-      await copyTextToClipboard(buildFigmaExportText());
-      showExportToast('Copied text for Figma');
+      const svg = buildExportSvg();
+      const blob = new Blob([svg], { type: 'image/svg+xml;charset=utf-8' });
+      downloadBlobFile(blob, `a11y-sidekick-${slugifyScreenName(state.lastScreenName)}.svg`);
+      showExportToast('SVG downloaded');
     } catch {
-      showExportToast('Could not copy — try Download CSV instead');
+      showExportToast('SVG export failed');
     }
   }
 
@@ -3756,15 +3675,14 @@
       return;
     }
 
-    const csv = `\uFEFF${buildExportCsv()}`;
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `a11y-sidekick-${slugifyScreenName(state.lastScreenName)}.csv`;
-    link.click();
-    URL.revokeObjectURL(url);
-    showExportToast('CSV downloaded');
+    try {
+      const csv = `\uFEFF${buildExportCsv()}`;
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+      downloadBlobFile(blob, `a11y-sidekick-${slugifyScreenName(state.lastScreenName)}.csv`);
+      showExportToast('CSV downloaded');
+    } catch {
+      showExportToast('CSV export failed');
+    }
   }
 
   function closeAllDownloadMenus() {
@@ -3884,9 +3802,8 @@
                 <i class="ph ph-download-simple" aria-hidden="true"></i>
               </button>
               <div class="download-menu" role="menu" hidden>
-                <button class="download-menu-item" type="button" role="menuitem" data-copy-figma>Copy for Figma</button>
-                <button class="download-menu-item" type="button" role="menuitem" data-copy-figma-text>Copy text for Figma</button>
-                <button class="download-menu-item" type="button" role="menuitem" data-download-csv>Download CSV</button>
+                <button class="download-menu-item" type="button" role="menuitem" data-download="svg">Download SVG</button>
+                <button class="download-menu-item" type="button" role="menuitem" data-download="csv">Download CSV</button>
               </div>
             </div>
             <button class="edit-icon-btn" data-open-edit-modal type="button" aria-label="Edit screen selections">
@@ -4187,43 +4104,34 @@
       return;
     }
 
-    const toggleDownloadBtn = event.target.closest('[data-toggle-download-menu]');
-    if (toggleDownloadBtn) {
-      const wrap = toggleDownloadBtn.closest('.download-menu-wrap');
-      const menu = wrap.querySelector('.download-menu');
-      const willOpen = menu.hidden;
-      closeAllDownloadMenus();
-      menu.hidden = !willOpen;
-      toggleDownloadBtn.setAttribute('aria-expanded', String(willOpen));
-      return;
-    }
-
-    if (event.target.closest('[data-copy-figma]')) {
-      copyChecklistForFigma();
-      closeAllDownloadMenus();
-      return;
-    }
-
-    if (event.target.closest('[data-copy-figma-text]')) {
-      copyChecklistTextForFigma();
-      closeAllDownloadMenus();
-      return;
-    }
-
-    if (event.target.closest('[data-download-csv]')) {
-      downloadChecklistCsv();
-      closeAllDownloadMenus();
-      return;
-    }
-
     if (event.target.closest('[data-open-edit-modal]')) {
       openEditModal();
     }
   });
 
   document.addEventListener('click', (event) => {
-    if (!event.target.closest('.download-menu-wrap')) {
+    const wrap = event.target.closest('.download-menu-wrap');
+    if (!wrap) {
       closeAllDownloadMenus();
+      return;
+    }
+
+    const downloadAction = event.target.closest('[data-download]');
+    if (downloadAction) {
+      event.preventDefault();
+      if (downloadAction.dataset.download === 'svg') downloadChecklistSvg();
+      if (downloadAction.dataset.download === 'csv') downloadChecklistCsv();
+      closeAllDownloadMenus();
+      return;
+    }
+
+    const toggleDownloadBtn = event.target.closest('[data-toggle-download-menu]');
+    if (toggleDownloadBtn) {
+      const menu = wrap.querySelector('.download-menu');
+      const willOpen = menu.hidden;
+      closeAllDownloadMenus();
+      menu.hidden = !willOpen;
+      toggleDownloadBtn.setAttribute('aria-expanded', String(willOpen));
     }
   });
 

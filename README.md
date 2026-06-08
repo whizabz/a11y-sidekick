@@ -24,7 +24,7 @@ Tell it what's on your screen — its structure and UI elements — and it filte
 6. **Switch role tabs** — focus on Design, Design → Dev, Dev Only, or Content criteria independently
 7. **Mark items** — check off each selection chip as you review a criterion
 8. **Edit anytime** — the pencil icon reopens your selections in a modal
-9. **Export** — download menu: paste editable frames into Figma, copy a text fallback, or download CSV
+9. **Export** — download menu: SVG for Figma (drag onto canvas) or CSV for spreadsheets
 
 The **WCAG by Role** tab gives you the complete reference for all 55 criteria, with Do/Don't guidance, handoff notes, and implementation details — organised by POUR principle within each role.
 
@@ -38,8 +38,8 @@ The **WCAG by Role** tab gives you the complete reference for all 55 criteria, w
 - **X/Y Done counter** — NA items reduce the denominator so your progress reflects reviewable work
 - **Edit modal** — change screen name or selections at any time without losing your checked states
 - **Full WCAG reference** — all criteria with Do/Don't, document-for-handoff, and implement-and-test guidance
-- **Zero build step** — single HTML file, no install; works offline except Figma frame export (loads a small CDN library on demand)
-- **Figma export** — paste editable frames (criterion, title, review chips per card, all roles) or a compact text fallback; CSV download also available
+- **Zero dependencies** — single HTML file, works offline, no install, no build step
+- **SVG export** — download a checklist summary (all roles, criterion titles, review chips) and drop it into Figma; CSV download also available
 - **Build journal** — [how the app was made](how-i-built-this.html)
 
 ---

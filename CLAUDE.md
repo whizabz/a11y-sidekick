@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project overview
 
-A11ySidekick is a **single static HTML file** ([`index.html`](index.html)) with no build step and all CSS/JS inline. Runtime CDN deps: Google Fonts, Phosphor icons, and `@magicpatterns/html-to-figma` (loaded on demand for Figma frame export only). To preview, open the file directly in a browser or serve with any static file server:
+A11ySidekick is a **single static HTML file** ([`index.html`](index.html)) with no build step, no dependencies beyond Google Fonts and Phosphor icons, and all CSS/JS inline. To preview, open the file directly in a browser or serve with any static file server:
 
 ```bash
 npx serve .        # then open http://localhost:3000/index.html
@@ -36,8 +36,7 @@ Everything lives in `index.html` in this order:
     #checklist-output  Dynamically rendered by renderChecklist()
   #panel-reference   WCAG by Role mode (static HTML, 4 tabs)
   #edit-modal        <dialog> for editing selections post-generation
-  #figma-export-root Off-screen mount for Figma frame export DOM
-<script>   All logic — plain ES2020; dynamic import() for html-to-figma
+<script>   All logic — no modules, plain ES2020
 ```
 
 ## Data model
@@ -98,9 +97,8 @@ const state = {
 | `generateChecklist()` | Reads form, updates state, calls renderChecklist, hides `#filter-card` |
 | `openEditModal()` | Pre-populates `#edit-modal` from current state and calls `.showModal()` |
 | `toggleTriggerState(id, trigger, checked)` | Sets reviewed state for a criterion chip, re-renders checklist |
-| `renderFigmaExportRoot()` | Builds off-screen DOM for Figma frame export (all roles, minimal cards) |
-| `copyChecklistForFigma()` | Dynamic-imports html-to-figma, writes `text/html` clipboard payload |
-| `copyChecklistTextForFigma()` | Plain-text fallback export via `buildFigmaExportText()` |
+| `buildExportSvg()` | Builds SVG string — all roles, criterion title + review chips per card |
+| `downloadChecklistSvg()` | Downloads `.svg` file for drag-and-drop into Figma |
 | `setMode(mode)` | Switches between Screen Checklist and WCAG by Role panels |
 | `switchTab(name)` | Switches tabs inside the WCAG by Role reference panel |
 
@@ -132,4 +130,4 @@ The original `a11y-sidekick-spec.md` describes some behaviours that have since b
 - **Edit modal instead of collapsed summary** — the spec described a collapsed "Screen: X" card with an Edit button; this was replaced with a `<dialog>` edit modal triggered by a pencil icon in the progress card.
 - **Role tabs replace "All" view** — the checklist defaults to the first role tab (Design), not an "All" view.
 - **Trigger filter chips in progress card** — the selection chips (Has overlay, Button, etc.) live inside the progress card and double as trigger filters, replacing the separate trigger filter bar that was below the role tabs.
-- **Figma frame export** — Download menu → Copy for Figma uses `@magicpatterns/html-to-figma` to paste editable frames; Copy text for Figma is the plain-text fallback.
+- **SVG export** — Download menu → Download SVG generates a checklist summary file for drag-and-drop into Figma.
