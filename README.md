@@ -38,6 +38,8 @@ The **WCAG by Role** tab gives you the complete reference for all 55 criteria, w
 - **Edit modal** — change screen name or selections at any time without losing your checked states
 - **Full WCAG reference** — all criteria with Do/Don't, document-for-handoff, and implement-and-test guidance
 - **Zero dependencies** — single HTML file, works offline, no install, no build step
+- **Export** — copy a compact text summary for Figma or download CSV of review status
+- **Build journal** — [how the app was made](how-i-built-this.html)
 
 ---
 

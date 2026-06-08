@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>How I Built A11ySidekick</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,300;1,6..72,400&family=Inter:wght@300;400;500;600;700&display=swap');
+
+    :root {
+      --bg: #f5f4ed;
+      --accent: #1B365D;
+      --accent-mid: #2a4f87;
+      --accent-light: #c8d6e8;
+      --accent-pale: #e8eef5;
+      --warm-100: #f0ede3;
+      --warm-200: #e4dfc8;
+      --warm-300: #c8c2aa;
+      --warm-400: #9c9480;
+      --warm-600: #5a5244;
+      --warm-800: #2c2820;
+      --shadow-ring: 0 0 0 1px rgba(27,54,93,0.08);
+      --shadow-whisper: 0 2px 12px rgba(27,54,93,0.06), 0 1px 3px rgba(27,54,93,0.04);
+      --shadow-lift: 0 8px 32px rgba(27,54,93,0.10), 0 2px 8px rgba(27,54,93,0.06);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--warm-800);
+      font-family: 'Inter', sans-serif;
+      font-size: 16px;
+      line-height: 1.5;
+    }
+
+    h1, h2, h3, h4 {
+      font-family: 'Newsreader', serif;
+      font-weight: 500;
+    }
+
+    .container {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+    }
+
+    /* ── Header ── */
+    .site-header {
+      padding: 4rem 0 2rem;
+    }
+
+    .project-eyebrow {
+      font-family: 'Inter', sans-serif;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--warm-400);
+      margin-bottom: 0.75rem;
+    }
+
+    .project-name {
+      font-size: clamp(2.5rem, 6vw, 3.75rem);
+      line-height: 1.1;
+      color: var(--accent);
+      margin-bottom: 0.75rem;
+    }
+
+    .project-tagline {
+      font-family: 'Inter', sans-serif;
+      font-size: 1.0625rem;
+      color: var(--warm-600);
+      line-height: 1.5;
+      max-width: 58ch;
+      margin-bottom: 1.5rem;
+    }
+
+    .project-links {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .link-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.375rem;
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      text-decoration: none;
+      padding: 0.375rem 0.875rem;
+      border-radius: 999px;
+      border: 1px solid var(--warm-300);
+      color: var(--warm-600);
+      background: #fff;
+      transition: border-color 0.15s, color 0.15s;
+    }
+
+    .link-pill:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .link-pill.live {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    .link-pill.live:hover {
+      background: var(--accent-mid);
+      border-color: var(--accent-mid);
+    }
+
+    .stat-strip {
+      display: flex;
+      gap: 2.5rem;
+      margin: 2rem 0 1.5rem;
+      padding: 1.25rem 0;
+      border-top: 1px solid var(--warm-200);
+      border-bottom: 1px solid var(--warm-200);
+      flex-wrap: wrap;
+    }
+
+    .stat-value {
+      font-family: 'Newsreader', serif;
+      font-size: 2rem;
+      font-weight: 500;
+      color: var(--accent);
+      line-height: 1.1;
+    }
+
+    .stat-label {
+      font-family: 'Inter', sans-serif;
+      font-size: 12px;
+      color: var(--warm-400);
+      margin-top: 0.25rem;
+    }
+
+    .intro-note {
+      background: var(--warm-100);
+      border-left: 3px solid var(--accent-light);
+      padding: 1rem 1.25rem;
+      border-radius: 0 6px 6px 0;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.875rem;
+      line-height: 1.55;
+      color: var(--warm-600);
+    }
+
+    /* ── Nav ── */
+    .phase-nav {
+      position: sticky;
+      top: 0;
+      background: var(--bg);
+      border-bottom: 1px solid var(--warm-200);
+      padding: 0.875rem 0;
+      z-index: 100;
+      overflow-x: auto;
+      white-space: nowrap;
+      scrollbar-width: none;
+    }
+
+    .phase-nav::-webkit-scrollbar { display: none; }
+
+    .phase-nav-inner {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+    }
+
+    .phase-nav a {
+      display: inline-block;
+      font-family: 'Inter', sans-serif;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--warm-400);
+      text-decoration: none;
+      margin-right: 1.5rem;
+      padding-bottom: 2px;
+      border-bottom: 2px solid transparent;
+      transition: color 0.15s, border-color 0.15s;
+    }
+
+    .phase-nav a:hover,
+    .phase-nav a.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+
+    /* ── Phases ── */
+    main {
+      padding-bottom: 2rem;
+    }
+
+    .phase-header {
+      padding: 3rem 0 1.5rem;
+      border-bottom: 1px solid var(--warm-200);
+      margin-bottom: 2rem;
+    }
+
+    .phase-label {
+      font-family: 'Inter', sans-serif;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--warm-400);
+      margin-bottom: 0.25rem;
+    }
+
+    .phase-title {
+      font-size: clamp(1.5rem, 3vw, 2.25rem);
+      line-height: 1.2;
+      color: var(--accent);
+      margin-bottom: 0.5rem;
+    }
+
+    .phase-desc {
+      font-family: 'Inter', sans-serif;
+      font-size: 0.9375rem;
+      color: var(--warm-600);
+      line-height: 1.5;
+      max-width: 60ch;
+    }
+
+    .steps {
+      display: grid;
+      gap: 1rem;
+    }
+
+    /* ── Step cards ── */
+    .step {
+      background: #fff;
+      border-radius: 10px;
+      padding: 1.5rem;
+      box-shadow: var(--shadow-whisper);
+      border: 1px solid var(--warm-200);
+      transition: box-shadow 0.15s ease;
+    }
+
+    .step:hover {
+      box-shadow: var(--shadow-lift);
+    }
+
+    .step-meta {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+      margin-bottom: 0.75rem;
+    }
+
+    .step-number {
+      font-family: 'Inter', sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--warm-300);
+      letter-spacing: 0.05em;
+    }
+
+    .step-type {
+      font-family: 'Inter', sans-serif;
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--accent);
+      background: var(--accent-pale);
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+
+    .step-type.pivot    { color: #7a4a00; background: #fef3dc; }
+    .step-type.debug    { color: #6b1a1a; background: #fdf0ef; }
+    .step-type.deploy   { color: #1a4a2e; background: #eef6f1; }
+    .step-type.idea     { color: #4a2a7a; background: #f4f0ff; }
+    .step-type.decision { color: var(--accent); background: var(--accent-pale); }
+
+    .step-title {
+      font-size: 1.0625rem;
+      line-height: 1.3;
+      color: var(--warm-800);
+      margin-bottom: 0.5rem;
+    }
+
+    .step-body {
+      font-family: 'Inter', sans-serif;
+      font-size: 0.9375rem;
+      line-height: 1.55;
+      color: var(--warm-600);
+    }
+
+    .step-tags {
+      margin-top: 1rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.375rem;
+    }
+
+    .tag {
+      font-family: 'Inter', sans-serif;
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--warm-600);
+      background: var(--warm-100);
+      border: 1px solid var(--warm-200);
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+
+    /* ── Footer ── */
+    footer {
+      padding: 3rem 0 2rem;
+      border-top: 1px solid var(--warm-200);
+      margin-top: 4rem;
+    }
+
+    .footer-inner {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .last-updated {
+      font-family: 'Inter', sans-serif;
+      font-size: 0.8125rem;
+      color: var(--warm-400);
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 1.25rem;
+    }
+
+    .footer-links a {
+      font-family: 'Inter', sans-serif;
+      font-size: 0.8125rem;
+      color: var(--warm-400);
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+
+    .footer-links a:hover {
+      color: var(--accent);
+    }
+  </style>
+</head>
+<body data-updated="2026-06-08T00:00:00">
+
+<div class="container">
+  <header class="site-header">
+    <p class="project-eyebrow">How I built this</p>
+    <h1 class="project-name">A11ySidekick</h1>
+    <p class="project-tagline">A focused WCAG 2.2 AA checklist that filters 55 criteria down to only those that apply to your screen — grouped by the team that owns each decision.</p>
+
+    <div class="project-links">
+      <a href="https://whizabz.github.io/a11y-sidekick/" class="link-pill live">↗ Live app</a>
+      <a href="https://github.com/whizabz/a11y-sidekick" class="link-pill">GitHub</a>
+    </div>
+
+    <div class="stat-strip">
+      <div class="stat-cell">
+        <div class="stat-value">29</div>
+        <div class="stat-label">Steps documented</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-value">7</div>
+        <div class="stat-label">Phases</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-value">Vanilla HTML</div>
+        <div class="stat-label">Primary stack</div>
+      </div>
+    </div>
+
+    <div class="intro-note">
+      <p>This is an overview, not a transcript. The steps below are paraphrased summaries — written to be easy to follow for someone who wasn't there. The actual prompts were often shorter, messier, and more back-and-forth than they look here.</p>
+    </div>
+  </header>
+</div>
+
+<nav class="phase-nav" aria-label="Build phases">
+  <div class="phase-nav-inner">
+    <a href="#phase-1">Phase 1 — Concept</a>
+    <a href="#phase-2">Phase 2 — Core Build</a>
+    <a href="#phase-3">Phase 3 — Form Redesign</a>
+    <a href="#phase-4">Phase 4 — Checklist UX</a>
+    <a href="#phase-5">Phase 5 — Edit Modal</a>
+    <a href="#phase-6">Phase 6 — Ship</a>
+    <a href="#phase-7">Phase 7 — Polish &amp; Handoff</a>
+  </div>
+</nav>
+
+<main>
+<div class="container">
+
+  <!-- ── Phase 1 ── -->
+  <section class="phase" id="phase-1">
+    <div class="phase-header">
+      <p class="phase-label">Phase 1</p>
+      <h2 class="phase-title">Concept & Architecture</h2>
+      <p class="phase-desc">Defining the problem, deciding what to build, and committing to a deliberately minimal stack.</p>
+    </div>
+    <div class="steps">
+
+      <article class="step">
+        <div class="step-meta">
+          <span class="step-number">01</span>
+          <span class="step-type idea">Idea</span>
+        </div>
+        <h3 class="step-title">The problem with accessibility checklists</h3>
+        <p class="step-body">Most WCAG checklists hand you all 55 criteria at once and leave you to figure out which ones apply. If you're reviewing a simple marketing page, you don't need the media captioning criteria. If your screen has no form fields, half the Design → Dev criteria are irrelevant. I wanted a tool that filters the list down to only what's actually relevant for a given screen — and organises it by who on the team is responsible for fixing each thing.</p>
+        <div class="step-tags">
+          <span class="tag">WCAG 2.2</span>
+          <span class="tag">Design tools</span>
+          <span class="tag">A11y</span>
+        </div>
+      </article>
+
+      <article class="step">
+        <div class="step-meta">
+          <span class="step-number">02</span>
+          <span class="step-type decision">Decision</span>
+        </div>
+        <h3 class="step-title">Single HTML file — zero dependencies</h3>
+        <p class="step-body">I made a deliberate call early: this would be one HTML file with everything inline. No npm, no build step, no framework. A designer can open it directly in a browser or serve it with a single Python command. The lack of dependencies means it never breaks — no packages to go stale, nothing to update. The only external dependency is Google Fonts, which degrades gracefully if it fails.</p>
+        <div class="step-tags">
+          <span class="tag">Architecture</span>
+          <span class="tag">Vanilla JS</span>
+          <span class="tag">No build</span>
+        </div>
+      </article>
+
+      <article class="step">
+        <div class="step-meta">
+          <span class="step-number">03</span>
+          <span class="step-type">Prompt</span>
+        </div>
+        <h3 class="step-title">Writing the spec before touching code</h3>
+        <p class="step-body">Before starting the build I wrote a detailed spec: the full CRITERIA data model, the three-layer filter system, all 55 criteria with their triggers mapped out, and the checklist UI behaviour. Having this as a reference document made the actual build much faster — the AI had a single source of truth to work from rather than needing me to re-explain the domain model in every prompt.</p>
+        <div class="step-tags">
+          <span class="tag">Spec-first</span>
+          <span class="tag">Data model</span>
+        </div>
+      </article>
+
+    </div>
+  </section>
+
+  <!-- ── Phase 2 ── -->
+  <section class="phase" id="phase-2">
+    <div class="phase-header">
+      <p class="phase-label">Phase 2</p>
+      <h2 class="phase-title">Core Build</h2>
+      <p class="phase-desc">Building the CRITERIA data array, filter logic, checklist renderer, and the full WCAG reference tab from the spec.</p>
+    </div>
+    <div class="steps">
+
+      <article class="step">
+        <div class="step-meta">
+          <span class="step-number">04</span>
+          <span class="step-type">Prompt</span>
+        </div>
+        <h3 class="step-title">The CRITERIA array — 55 objects, all inline</h3>
+        <p class="step-body">I asked Claude to build the full CRITERIA array from the spec. Each criterion is a plain JS object with an ID, title, layer, role, trigger list, rule text, Do/Don't text, and optional extras — a doc note for Design→Dev handoff, an impl note for Dev, an owns note for Content. The array lives directly in the script tag. About 1,500 lines of structured data that needed to be accurate; working from the spec as source of truth kept it clean.</p>
+        <div class="step-tags">
+          <span class="tag">CRITERIA array</span>
+          <span class="tag">Data</span>
+        </div>
+      </article>
+
+      <article class="step">
+        <div class="step-meta">
+          <span class="step-number">05</span>
+          <span class="step-type decision">Decision</span>
+        </div>
+        <h3 class="step-title">Three-layer filter model</h3>
+        <p class="step-body">The filtering works in three layers: always-on criteria are included regardless of what's selected; structure criteria fire on layout properties of the screen (sticky headers, overlays, timeouts); element criteria fire on what UI components are present. A criterion can appear in multiple trigger lists — if the user selects both "Has overlay" and "Form field", a criterion that responds to both only appears once. Deduplication is by WCAG ID, not by position in the array.</p>
+        <div class="step-tags">
+          <span class="tag">Filter logic</span>
+          <span class="tag">Deduplication</span>
+          <span class="tag">Layers</span>
+        </div>
+      </article>
+
+      <article class="step">
+        <div class="step-meta">
+          <span class="step-number">06</span>
+          <span class="step-type">Prompt</span>
+        </div>
+        <h3 class="step-title">Checklist renderer — state management and role grouping</h3>
+        <p class="step-body">The renderChecklist() function groups filtered criteria by who owns them: Design, Design → Dev, Dev Only, Content. Always-on criteria distribute into their role group. The ✓ and NA toggle states are stored in a Map keyed by criterion ID — clicking an already-active state button toggles back to open. Crucially, this Map persists across regenerations, so if you update your selections, checked items stay checked for any criterion that's still in the new list.</p>
+        <div class="step-tags">
+          <span class="tag">renderChecklist</span>
+          <span class="tag">State Map</span>
+          <span class="tag">Role grouping</span>
+        </div>
+      </article>
+
+      <article class="step">
+        <div class="step-meta">
+          <span class="step-number">07</span>
+          <span class="step-type">Prompt</span>
+        </div>
+        <h3 class="step-title">WCAG by Role reference tab</h3>
+        <p class="step-body">The second mode came from an existing wcag-guidelines.html file that already had all the reference content built out. I wrapped it in the new tab system and preserved the POUR-section structure (Perceivable / Operable / Understandable / Robust) within each role tab. The label "Full Reference" got renamed to "WCAG by Role" later — it says both what standard it covers and how it's organised, which is more useful at a glance.</p>
+        <div class="step-tags">
+          <span class="tag">Reference tab</span>
+          <span class="tag">POUR</span>
+          <span class="tag">Static HTML</span>
+        </div>
+      </article>
+
+    </div>
+  </section>
+
+  <!-- ── Phase 3 ── -->
+  <section class="phase" id="phase-3">
+    <div class="phase-header">
+      <p class="phase-label">Phase 3</p>
+      <h2 class="phase-title">Form Redesign</h2>
+      <p class="phase-desc">Rethinking the selection flow so the experience of building a checklist felt more intentional and less cluttered.</p>
+    </div>
+    <div class="steps">
+
+      <article class="step">
+        <div class="step-meta">
+          <span class="step-number">08</span>
+          <span class="step-type pivot">Pivot</span>
+        </div>
+        <h3 class="step-title">The always-on callout was in the wrong place</h3>
+        <p class="step-body">The original layout showed the always-on criteria list first, then the structure chips, then the element chips. This felt backwards — the always-on list is informational, not something the user configures. I moved the selections to the front so the form reads: name the screen → pick structure → pick elements → generate. The always-on callout moved below the generate button, since it describes what's automatically included rather than what the user is choosing.</p>
+        <div class="step-tags">
+          <span class="tag">Form UX</span>
+          <span class="tag">Information order</span>
+        </div>
+      </article>
+
+      <article class="step">
+        <div class="step-meta">
+          <span class="step-number">09</span>
+          <span class="step-type">Prompt</span>
+        </div>
+        <h3 class="step-title">Chips inside the card border, Reset per group</h3>
+        <p class="step-body">Two changes at once: the selection group titles were straddling the card border (a default fieldset/legend behaviour that's hard to override cross-browser), so I switched to div + role="group" + aria-labelledby for full layout control. I also replaced the single global Clear button with individual Reset buttons inside each group header — so you can clear structure selections without losing your element picks and vice versa.</p>
+        <div class="step-tags">
+          <span class="tag">fieldset → div</span>
+          <span class="tag">aria-labelledby</span>
+          <span class="tag">Per-group reset</span>
+        </div>
+      </article>
+
+      <article class="step">
+        <div class="step-meta">
+          <span class="step-number">10</span>
+          <span class="step-type">Prompt</span>
+        </div>
+        <h3 class="step-title">Collapsing the form after generation</h3>
+        <p class="step-body">Once you generate a checklist, you don't need the full form occupying the top of the page. I added a collapsed state that replaced the expanded form with a compact summary — screen name, the selected filter chips, and an Edit button. This later got replaced entirely by an edit modal (the summary card created duplicate chips once the progress card also showed selections), but the idea of hiding the form after generation was right.</p>
+        <div class="step-tags">
+          <span class="tag">Form state</span>
+          <span class="tag">Collapsed UI</span>
+        </div>
+      </article>
+
+    </div>
+  </section>
+
+  <!-- ── Phase 4 ── -->
+  <section class="phase" id="phase-4">
+    <div class="phase-header">
+      <p class="phase-label">Phase 4</p>
+      <h2 class="phase-title">Checklist UX</h2>
+      <p class="phase-desc">Making the generated checklist faster to work through — role tabs, trigger filters, and a tighter progress model.</p>
+    </div>
+    <div class="steps">
+
+      <article class="step">
+        <div class="step-meta">
+          <span class="step-number">11</span>
+          <span class="step-type">Prompt</span>
+        </div>
+        <h3 class="step-title">Role tabs replace static section headers</h3>
+        <p class="step-body">The first checklist version stacked all role sections one after another with static headers. For a complex screen this could mean 30+ criteria in a long scroll. I replaced the headers with a segmented nav — Design, Design → Dev, Dev Only, Content — so you can jump between roles without scrolling. Each tab shows the criteria count. The "All" option was dropped early on; defaulting to Design made more sense since that's usually the first person reviewing the screen.</p>
+        <div class="step-tags">
+          <span class="tag">Segmented nav</span>
+          <span class="tag">Role tabs</span>
+        </div>
+      </article>
+
+      <article class="step">
+        <div class="step-meta">
+          <span class="step-number">12</span>
+          <span class="step-type">Prompt</span>
+        </div>
+        <h3 class="step-title">Trigger filter chips — the key UX insight</h3>
+        <p class="step-body">A designer reviewing a screen with six selected elements might want to focus specifically on everything related to "Form field" — work through all the form field criteria in one go, then move on. There was no way to do that. I added trigger filter chips inside the progress card, one per selection the user made. Clicking "Form field" narrows the visible criteria to only those triggered by form fields, with role tab counts updating live. Each criterion card also shows which of your selections triggered it as small chips in its metadata row.</p>
+        <div class="step-tags">
+          <span class="tag">Trigger filter</span>
+          <span class="tag">Criterion chips</span>
+          <span class="tag">Focused review</span>
+        </div>
+      </article>
+
+      <article class="step">
+        <div class="step-meta">
+          <span class="step-number">13</span>
+          <span class="step-type decision">Decision</span>
+        </div>
+        <h3 class="step-title">Always show Do/Don't — drop the guidance toggle</h3>
+        <p class="step-body">The original design had a "Show guidance" toggle that expanded the Do/Don't blocks. The thinking was to keep cards scannable. In practice the guidance is the whole point — when you're checking a criterion you want to know immediately what "done" looks like. Removing the toggle made each card self-contained with no extra interaction needed. It made the page longer, but each card became more immediately useful.</p>
+        <div class="step-tags">
+          <span class="tag">Remove friction</span>
+          <span class="tag">Information density</span>
+        </div>
+      </article>
+
+      <article class="step">
+        <div class="step-meta">
+          <span class="step-number">14</span>
+          <span class="step-type decision">Decision</span>
+        </div>
+        <h3 class="step-title">X/Y Done — N/A reduces the denominator</h3>
+        <p class="step-body">Replacing "30 total criteria" with "X/Y Done" was the easy part. The interesting decision was what Y should be. If you mark 5 items as N/A they're not things you need to review, so they shouldn't inflate the denominator. Y = total minus N/A items. This means your progress counter reflects actual reviewable work rather than a raw count that includes things you've already decided don't apply. I also removed the progress bar and the done/N/A/open stat chips to keep the progress card compact.</p>
+        <div class="step-tags">
+          <span class="tag">Progress model</span>
+          <span class="tag">N/A denominator</span>
+        </div>
+      </article>
+
+    </div>
+  </section>
+
+  <!-- ── Phase 5 ── -->
+  <section class="phase" id="phase-5">
+    <div class="phase-header">
+      <p class="phase-label">Phase 5</p>
+      <h2 class="phase-title">Edit Modal & Hierarchy</h2>
+      <p class="phase-desc">Replacing the collapsed summary card with a dialog modal — and untangling a stubborn mobile CSS bug.</p>
+    </div>
+    <div class="steps">
+
+      <article class="step">
+        <div class="step-meta">
+          <span class="step-number">15</span>
+          <span class="step-type pivot">Pivot</span>
+        </div>
+        <h3 class="step-title">The summary card was duplicating the chips</h3>
+        <p class="step-body">After adding trigger filter chips inside the progress card, the selections were showing up in two places at once: the collapsed summary card at the top of the page AND the progress card below it. The hierarchy wasn't making sense. The fix was to remove the summary card entirely — the progress card already showed the screen name and selections. Editing moved into a dialog modal triggered by a small pencil icon in the progress card header.</p>
+        <div class="step-tags">
+          <span class="tag">Hierarchy</span>
+          <span class="tag">Remove duplication</span>
+        </div>
+      </article>
+
+      <article class="step">
+        <div class="step-meta">
+          <span class="step-number">16</span>
+          <span class="step-type">Prompt</span>
+        </div>
+        <h3 class="step-title">Building the edit dialog</h3>
+        <p class="step-body">I replaced the Edit button with a native HTML dialog element. Clicking the pencil icon opens it pre-populated with the current screen name and selections. Save & Regenerate reads from the modal inputs, updates the state, and re-renders the checklist while preserving all existing done/N/A states for any criteria that are still in the new list. The browser's built-in dialog handles focus trapping and Escape-to-close natively — no JS needed for that part.</p>
+        <div class="step-tags">
+          <span class="tag">dialog element</span>
+          <span class="tag">State preservation</span>
+          <span class="tag">Native browser API</span>
+        </div>
+      </article>
+
+      <article class="step">
+        <div class="step-meta">
+          <span class="step-number">17</span>
+          <span class="step-type debug">Debug</span>
+        </div>
+        <h3 class="step-title">Mobile CSS ghost: state-actions { width: 100% }</h3>
+        <p class="step-body">After moving the ✓/NA buttons to the top-right of each criterion card, they started consuming the full row width on narrower viewports — crushing the meta badges (the criterion code pill and layer tag). The root cause was a leftover mobile media query: .state-actions { width: 100% }. It had been added when the buttons used to stack below the title at small sizes. The card structure changed but the CSS hadn't been cleaned up. Removing that single rule fixed it immediately.</p>
+        <div class="step-tags">
+          <span class="tag">CSS</span>
+          <span class="tag">Stale media query</span>
+          <span class="tag">Debug</span>
+        </div>
+      </article>
+
+    </div>
+  </section>
+
+  <!-- ── Phase 6 ── -->
+  <section class="phase" id="phase-6">
+    <div class="phase-header">
+      <p class="phase-label">Phase 6</p>
+      <h2 class="phase-title">Ship</h2>
+      <p class="phase-desc">Documenting the codebase, pushing to GitHub, and making the tool properly shareable.</p>
+    </div>
+    <div class="steps">
+
+      <article class="step">
+        <div class="step-meta">
+          <span class="step-number">18</span>
+          <span class="step-type">Prompt</span>
+        </div>
+        <h3 class="step-title">CLAUDE.md — a guide for future AI sessions</h3>
+        <p class="step-body">The entire project was built through a Claude Code session. To make future sessions productive without re-explaining the domain, I asked Claude to generate a CLAUDE.md — a codebase guide capturing the data model, the three-layer system, the runtime state object, every key function, design tokens, and the intentional deviations from the original spec. It's an onboarding doc written for an AI that won't have memory of this session.</p>
+        <div class="step-tags">
+          <span class="tag">CLAUDE.md</span>
+          <span class="tag">Documentation</span>
+          <span class="tag">AI context</span>
+        </div>
+      </article>
+
+      <article class="step">
+        <div class="step-meta">
+          <span class="step-number">19</span>
+          <span class="step-type deploy">Deploy</span>
+        </div>
+        <h3 class="step-title">Git init and first push</h3>
+        <p class="step-body">Initialised a git repo, staged all the files, and pushed to github.com/whizabz/a11y-sidekick. The remote already had a LICENSE file from GitHub's setup wizard, which required a --allow-unrelated-histories pull to merge cleanly before the push went through. Renamed a11y-sidekick.html to index.html so GitHub Pages would serve it at the root URL without needing a path.</p>
+        <div class="step-tags">
+          <span class="tag">Git</span>
+          <span class="tag">GitHub Pages</span>
+          <span class="tag">index.html</span>
+        </div>
+      </article>
+
+      <article class="step">
+        <div class="step-meta">
+          <span class="step-number">20</span>
+          <span class="step-type deploy">Deploy</span>
+        </div>
+        <h3 class="step-title">Open Graph meta tags + social preview image</h3>
+        <p class="step-body">Added all the og: and twitter: meta tags pointing to a hosted og-image.png. The tags include image dimensions (1200×630), alt text, and Twitter Card metadata with @whizabz as both site and creator. Pushed the social preview screenshot to the repo — now sharing the URL on X or LinkedIn shows the app preview card rather than a blank link.</p>
+        <div class="step-tags">
+          <span class="tag">Open Graph</span>
+          <span class="tag">Twitter Card</span>
+          <span class="tag">Social sharing</span>
+        </div>
+      </article>
+
+      <article class="step">
+        <div class="step-meta">
+          <span class="step-number">21</span>
+          <span class="step-type">Prompt</span>
+        </div>
+        <h3 class="step-title">README for GitHub</h3>
+        <p class="step-body">Wrote a README covering what the tool does, how to use it, key features, local dev instructions, and a full WCAG 2.2 coverage table including the six new-in-2.2 criteria. The README is the tool's public face for anyone landing on the repo without knowing what they're looking at.</p>
+        <div class="step-tags">
+          <span class="tag">README</span>
+          <span class="tag">Documentation</span>
+        </div>
+      </article>
+
+      <article class="step">
+        <div class="step-meta">
+          <span class="step-number">22</span>
+          <span class="step-type">Prompt</span>
+        </div>
+        <h3 class="step-title">This document</h3>
+        <p class="step-body">The first version of this build journal covered the initial session — concept through first push. A second round of work (Phase 7) added review UX refinements, a design-system pass, sticky filters, and Figma/CSV export. The journal was updated to include those steps too.</p>
+        <div class="step-tags">
+          <span class="tag">Meta</span>
+          <span class="tag">Build journal</span>
+        </div>
+      </article>
+
+    </div>
+  </section>
+
+  <!-- ── Phase 7 ── -->
+  <section class="phase" id="phase-7">
+    <div class="phase-header">
+      <p class="phase-label">Phase 7</p>
+      <h2 class="phase-title">Polish &amp; Handoff</h2>
+      <p class="phase-desc">A second iteration pass — tighter visual design, per-chip review, scroll-aware filters, and exports that travel back into Figma.</p>
+    </div>
+    <div class="steps">
+
+      <article class="step">
+        <div class="step-meta">
+          <span class="step-number">23</span>
+          <span class="step-type">Prompt</span>
+        </div>
+        <h3 class="step-title">Kami design tokens and Phosphor icons</h3>
+        <p class="step-body">The UI got aligned to the Kami design system — parchment surfaces, ink-blue accent, warm grey text hierarchy, solid tag tints instead of translucent washes. Icons moved to Phosphor via CDN: check and X in Do/Don't blocks, pencil for edit, info for WCAG originals, download for export. The goal was the app feeling like a considered document tool, not a generic form.</p>
+        <div class="step-tags">
+          <span class="tag">Kami</span>
+          <span class="tag">Phosphor</span>
+          <span class="tag">Visual polish</span>
+        </div>
+      </article>
+
+      <article class="step">
+        <div class="step-meta">
+          <span class="step-number">24</span>
+          <span class="step-type pivot">Pivot</span>
+        </div>
+        <h3 class="step-title">Per-chip review instead of whole-card ✓/NA</h3>
+        <p class="step-body">A criterion triggered by three selections — say Text, Button, and Form field — isn't one binary decision. You might have checked contrast on body text but not on the submit button yet. Whole-card Done/NA was too coarse. Review moved to checkboxes at the bottom of each card, one per matching selection chip. Progress became <em>X/Y Done</em> where Y counts individual chips, not cards. State lives in a <code>triggerStates</code> Map keyed <code>criterionId:trigger</code>, still preserved across regenerations.</p>
+        <div class="step-tags">
+          <span class="tag">triggerStates</span>
+          <span class="tag">Per-chip review</span>
+          <span class="tag">Progress model</span>
+        </div>
+      </article>
+
+      <article class="step">
+        <div class="step-meta">
+          <span class="step-number">25</span>
+          <span class="step-type">Prompt</span>
+        </div>
+        <h3 class="step-title">WCAG original text in a modal</h3>
+        <p class="step-body">Each checklist card got an info button that opens a <code>&lt;dialog&gt;</code> with the official W3C wording for that criterion — pulled from a <code>WCAG_ORIGINAL</code> lookup table. The app's Do/Don't guidance stays practical and team-specific; the modal is there when someone wants the spec language verbatim without leaving the checklist.</p>
+        <div class="step-tags">
+          <span class="tag">WCAG_ORIGINAL</span>
+          <span class="tag">dialog</span>
+          <span class="tag">Reference</span>
+        </div>
+      </article>
+
+      <article class="step">
+        <div class="step-meta">
+          <span class="step-number">26</span>
+          <span class="step-type">Prompt</span>
+        </div>
+        <h3 class="step-title">Sticky filter bar on scroll</h3>
+        <p class="step-body">Once you scroll past the progress card, the selection chips disappear — but you still need them to narrow the list. An <code>IntersectionObserver</code> watches the progress card; when it leaves the viewport above, a fixed bar slides in at the top with all structure and element chips in one flat row (no Structure/Elements labels). Same filter behaviour as the progress card; it hides again when you scroll back up.</p>
+        <div class="step-tags">
+          <span class="tag">IntersectionObserver</span>
+          <span class="tag">Sticky UI</span>
+          <span class="tag">Trigger filter</span>
+        </div>
+      </article>
+
+      <article class="step">
+        <div class="step-meta">
+          <span class="step-number">27</span>
+          <span class="step-type decision">Decision</span>
+        </div>
+        <h3 class="step-title">Export for Figma and CSV</h3>
+        <p class="step-body">After finishing a review, designers wanted to park the results next to the screen in Figma. Editable HTML-to-Figma paste would need a conversion library; compact plain text works natively — Figma creates a text layer on paste. A download icon on the progress card opens a menu: <strong>Copy for Figma</strong> (screen name, progress, selections, all roles with ✓/○ per chip) and <strong>Download CSV</strong> (one row per chip, Excel-friendly with UTF-8 BOM). Both read live state at export time.</p>
+        <div class="step-tags">
+          <span class="tag">Figma handoff</span>
+          <span class="tag">CSV</span>
+          <span class="tag">Clipboard</span>
+        </div>
+      </article>
+
+      <article class="step">
+        <div class="step-meta">
+          <span class="step-number">28</span>
+          <span class="step-type">Prompt</span>
+        </div>
+        <h3 class="step-title">Card layout and header cleanup</h3>
+        <p class="step-body">Checklist cards were tightened: criterion ID and title on one serif line, layer tag on the right, dividers removed, redundant note lines merged into rule text where they duplicated it. Review chips get a brand-tinted background when checked. Small layout passes like this add up — the checklist reads faster when each card has less visual noise.</p>
+        <div class="step-tags">
+          <span class="tag">Card UX</span>
+          <span class="tag">Typography</span>
+        </div>
+      </article>
+
+      <article class="step">
+        <div class="step-meta">
+          <span class="step-number">29</span>
+          <span class="step-type decision">Decision</span>
+        </div>
+        <h3 class="step-title">Remove the dev helper</h3>
+        <p class="step-body">An "I'm feeling lucky" button had been useful during development — random screen name and chip selections to stress-test the renderer. Once the tool was stable enough to share, it was noise on the form. Removed the button, its CSS, and the randomiser functions. Real workflows start with naming the screen and making deliberate selections.</p>
+        <div class="step-tags">
+          <span class="tag">Cleanup</span>
+          <span class="tag">Ship-ready</span>
+        </div>
+      </article>
+
+    </div>
+  </section>
+
+</div>
+</main>
+
+<div class="container">
+  <footer>
+    <div class="footer-inner">
+      <div class="last-updated">
+        Last updated — <time id="last-updated" datetime="2026-06-08T00:00:00">8 June 2026</time>
+      </div>
+      <div class="footer-links">
+        <a href="https://whizabz.github.io/a11y-sidekick/">Live app</a>
+        <a href="https://github.com/whizabz/a11y-sidekick">GitHub</a>
+      </div>
+    </div>
+  </footer>
+</div>
+
+<script>
+  // Auto-format last updated date
+  const t = document.getElementById('last-updated');
+  if (t) {
+    const d = new Date(t.getAttribute('datetime'));
+    t.textContent = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+  }
+
+  // Active nav highlight on scroll
+  const sections = document.querySelectorAll('.phase');
+  const navLinks = document.querySelectorAll('.phase-nav a');
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        navLinks.forEach(link => {
+          link.classList.toggle('active', link.getAttribute('href') === '#' + entry.target.id);
+        });
+      }
+    });
+  }, { rootMargin: '-30% 0px -60% 0px' });
+
+  sections.forEach(s => observer.observe(s));
+</script>
+
+</body>
+</html>
