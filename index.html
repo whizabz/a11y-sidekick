@@ -1378,7 +1378,7 @@
       z-index: 40;
       background: var(--ivory);
       border-bottom: 1px solid var(--border);
-      padding: 10px 32px;
+      padding: 10px 0;
       box-shadow: var(--shadow-whisper);
       transform: translateY(-110%);
       visibility: hidden;
@@ -1390,9 +1390,20 @@
       visibility: visible;
     }
 
-    .sticky-filter-chips {
+    .sticky-filter-inner {
       max-width: 1080px;
       margin: 0 auto;
+      padding: 0 32px;
+    }
+
+    .sticky-filter-chips {
+      width: 100%;
+      max-width: 100%;
+    }
+
+    .sticky-filter-chips > .selection-chip-group {
+      max-width: 100%;
+      min-width: 0;
     }
 
     /* ── Edit modal ── */
@@ -1729,8 +1740,8 @@
         font-size: 34px;
       }
 
-      .sticky-filter-bar {
-        padding: 10px 16px;
+      .sticky-filter-inner {
+        padding: 0 16px;
       }
 
     }
@@ -3105,7 +3116,9 @@
 </main>
 
 <div id="sticky-filter-bar" class="sticky-filter-bar" aria-hidden="true">
-  <div class="sticky-filter-chips" role="toolbar" aria-label="Filter checklist by selection"></div>
+  <div class="sticky-filter-inner">
+    <div class="sticky-filter-chips" role="toolbar" aria-label="Filter checklist by selection"></div>
+  </div>
 </div>
 
 <div id="export-toast" class="export-toast" role="status" aria-live="polite" hidden></div>
