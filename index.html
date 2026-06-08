@@ -306,29 +306,10 @@
       min-width: 0;
     }
 
-    .section-title-row .checklist-count {
-      flex-shrink: 0;
-    }
-
     .section-copy {
       max-width: 720px;
       font-size: 14px;
       color: var(--ink-mid);
-    }
-
-    .checklist-count {
-      display: inline-flex;
-      align-items: center;
-      min-height: 32px;
-      padding: 0 12px;
-      border-radius: 999px;
-      border: 1px solid var(--border);
-      background: var(--tag-light);
-      color: var(--brand);
-      font-family: var(--sans);
-      font-size: 12px;
-      font-weight: 600;
-      white-space: nowrap;
     }
 
     .panel-grid {
@@ -1787,7 +1768,6 @@
           <div class="filter-header">
             <div class="section-title-row">
               <h2 class="section-title">Build a focused checklist for one screen</h2>
-              <span class="checklist-count" id="selection-count">7 criteria selected · 0 filters active</span>
             </div>
             <p class="section-copy">Name the screen, mark its structure and UI elements, and A11ySidekick will assemble the WCAG 2.2 AA criteria that apply. The always-on criteria are included every time.</p>
           </div>
@@ -3321,14 +3301,6 @@
   function updateSelectionsFromInputs() {
     state.selectedStructure = new Set(Array.from(document.querySelectorAll('input[name="structure"]:checked')).map((input) => input.value));
     state.selectedElements = new Set(Array.from(document.querySelectorAll('input[name="element"]:checked')).map((input) => input.value));
-    updateSelectionCount();
-  }
-
-  function updateSelectionCount() {
-    const criteria = getApplicableCriteria(state.selectedStructure, state.selectedElements);
-    const selectionCount = document.getElementById('selection-count');
-    const selectedTriggerCount = state.selectedStructure.size + state.selectedElements.size;
-    selectionCount.textContent = `${criteria.length} criteria selected · ${selectedTriggerCount} filters active`;
   }
 
   function renderAlwaysList() {
@@ -3788,7 +3760,6 @@
     state.expandedItems = new Set();
     state.generatedIds = [];
     state.lastScreenName = '';
-    updateSelectionCount();
     document.getElementById('checklist-output').innerHTML = `
       <section class="empty-state" aria-live="polite">
         <h2>Checklist ready when you are</h2>
@@ -3994,7 +3965,6 @@
     }
   });
 
-  updateSelectionCount();
   switchTab('design');
   setMode('checklist');
 </script>
