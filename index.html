@@ -1289,7 +1289,7 @@
       top: calc(100% + 6px);
       right: 0;
       z-index: 20;
-      min-width: 168px;
+      min-width: 188px;
       padding: 6px;
       background: var(--ivory);
       border: 1px solid var(--border);
@@ -1340,6 +1340,147 @@
 
     .export-toast[hidden] {
       display: none;
+    }
+
+    #figma-export-root {
+      position: fixed;
+      left: 0;
+      top: 0;
+      width: 640px;
+      opacity: 0;
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    .figma-export-frame {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      width: 640px;
+      padding: 24px;
+      background: #faf9f5;
+      border: 1px solid #e8e6dc;
+      border-radius: 8px;
+      font-family: "Newsreader", Georgia, serif;
+      color: #141413;
+    }
+
+    .figma-export-header {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e8e6dc;
+    }
+
+    .figma-export-title {
+      margin: 0;
+      font-family: "Newsreader", Georgia, serif;
+      font-size: 22px;
+      font-weight: 500;
+      line-height: 1.25;
+      color: #1B365D;
+    }
+
+    .figma-export-meta {
+      margin: 0;
+      font-family: "Inter", Arial, sans-serif;
+      font-size: 13px;
+      font-weight: 400;
+      line-height: 1.4;
+      color: #6b6a64;
+    }
+
+    .figma-export-footer {
+      margin: 0;
+      padding-top: 16px;
+      border-top: 1px solid #e8e6dc;
+      font-family: "Inter", Arial, sans-serif;
+      font-size: 11px;
+      font-weight: 400;
+      line-height: 1.4;
+      color: #6b6a64;
+    }
+
+    .figma-export-role {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .figma-export-role-title {
+      margin: 0;
+      font-family: "Inter", Arial, sans-serif;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #6b6a64;
+    }
+
+    .figma-export-cards {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .figma-export-card {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding: 16px;
+      background: #faf9f5;
+      border: 1px solid #e8e6dc;
+      border-radius: 8px;
+    }
+
+    .figma-export-card-title {
+      margin: 0;
+      font-family: "Newsreader", Georgia, serif;
+      font-size: 16px;
+      font-weight: 500;
+      line-height: 1.35;
+      color: #141413;
+    }
+
+    .figma-export-code {
+      color: #1B365D;
+      margin-right: 6px;
+    }
+
+    .figma-export-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .figma-export-chip {
+      display: inline-flex;
+      align-items: center;
+      min-height: 28px;
+      padding: 0 12px;
+      border-radius: 999px;
+      border: 1px solid #e8e6dc;
+      background: #e8e6dc;
+      color: #3d3d3a;
+      font-family: "Inter", Arial, sans-serif;
+      font-size: 12px;
+      font-weight: 500;
+      line-height: 1;
+    }
+
+    .figma-export-chip.is-reviewed {
+      border-color: #D6E1EE;
+      background: #E4ECF5;
+      color: #1B365D;
+    }
+
+    .figma-export-icon {
+      display: inline-flex;
+      flex-shrink: 0;
+      width: 12px;
+      height: 12px;
+      margin-right: 6px;
     }
 
     .selection-section {
@@ -3121,6 +3262,8 @@
   </div>
 </div>
 
+<div id="figma-export-root" aria-hidden="true"></div>
+
 <div id="export-toast" class="export-toast" role="status" aria-live="polite" hidden></div>
 
 <script>
@@ -3345,15 +3488,14 @@
     return state.triggerStates.get(triggerStateKey(criterionId, trigger)) === true;
   }
 
+  function isCriterionReviewed(criterion) {
+    const triggers = getMatchingTriggers(criterion);
+    return triggers.length > 0 && triggers.every((trigger) => isTriggerReviewed(criterion.id, trigger.value));
+  }
+
   function getReviewProgress(criteria) {
-    let done = 0;
-    let total = 0;
-    criteria.forEach((criterion) => {
-      getMatchingTriggers(criterion).forEach((trigger) => {
-        total += 1;
-        if (isTriggerReviewed(criterion.id, trigger.value)) done += 1;
-      });
-    });
+    const total = criteria.length;
+    const done = criteria.filter(isCriterionReviewed).length;
     return { done, total };
   }
 
@@ -3402,189 +3544,82 @@
     return s;
   }
 
-  const SVG_EXPORT = {
-    width: 640,
-    pad: 24,
-    bg: '#faf9f5',
-    border: '#e8e6dc',
-    brand: '#1B365D',
-    ink: '#141413',
-    stone: '#6b6a64',
-    darkWarm: '#3d3d3a',
-    chipBg: '#e8e6dc',
-    chipReviewedBg: '#E4ECF5',
-    chipReviewedBorder: '#D6E1EE',
-    serif: 'Newsreader, Georgia, serif',
-    sans: 'Inter, Arial, sans-serif',
-  };
-
   function formatExportTimestamp() {
     return new Intl.DateTimeFormat(undefined, {
-      dateStyle: 'medium',
-      timeStyle: 'short',
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
       timeZoneName: 'short',
     }).format(new Date());
   }
 
-  function svgEscape(text) {
-    return String(text)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;');
-  }
-
-  function estimateSvgTextWidth(text, fontSize) {
-    return [...String(text)].reduce((width, ch) => width + (ch === ' ' ? fontSize * 0.28 : fontSize * 0.58), 0);
-  }
-
-  function wrapSvgText(text, maxWidth, fontSize) {
-    const words = String(text).split(/\s+/).filter(Boolean);
-    if (!words.length) return [];
-
-    const lines = [words[0]];
-    for (let i = 1; i < words.length; i += 1) {
-      const candidate = `${lines[lines.length - 1]} ${words[i]}`;
-      if (estimateSvgTextWidth(candidate, fontSize) > maxWidth) {
-        lines.push(words[i]);
-      } else {
-        lines[lines.length - 1] = candidate;
-      }
+  function renderExportStatusIcon(reviewed) {
+    if (reviewed) {
+      return '<svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><circle cx="6" cy="6" r="5.5" fill="#1B365D"/><path d="M3.5 6L5.5 8L8.5 4" stroke="#FFFFFF" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
     }
-    return lines;
+    return '<svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><circle cx="6" cy="6" r="4.5" stroke="#6b6a64" stroke-width="1.2"/></svg>';
   }
 
-  function svgText(x, y, text, options = {}) {
-    const {
-      size = 13,
-      fill = SVG_EXPORT.ink,
-      weight = 400,
-      family = SVG_EXPORT.sans,
-    } = options;
-    return `<text x="${x}" y="${y}" fill="${fill}" font-family="${family}" font-size="${size}" font-weight="${weight}" dominant-baseline="hanging">${svgEscape(text)}</text>`;
+  function renderFigmaExportChip(trigger, reviewed) {
+    const cls = reviewed ? 'figma-export-chip is-reviewed' : 'figma-export-chip';
+    return `<span class="${cls}"><span class="figma-export-icon">${renderExportStatusIcon(reviewed)}</span>${escapeHtml(trigger.label)}</span>`;
   }
 
-  function svgRoundedRect(x, y, width, height, fill, stroke) {
-    const rx = Math.min(8, height / 2);
-    return `<rect x="${x}" y="${y}" width="${width}" height="${height}" rx="${rx}" fill="${fill}" stroke="${stroke}" stroke-width="1"/>`;
-  }
-
-  function layoutSvgChipRow(chips, startX, startY, maxWidth) {
-    const chipHeight = 28;
-    const gap = 8;
-    const padX = 12;
-    const fontSize = 12;
-    const placed = [];
-    let x = startX;
-    let rowY = startY;
-
-    chips.forEach((chip) => {
-      const chipWidth = Math.ceil(estimateSvgTextWidth(chip.label, fontSize) + padX * 2);
-      if (x + chipWidth > startX + maxWidth && x > startX) {
-        x = startX;
-        rowY += chipHeight + gap;
-      }
-      placed.push({ x, y: rowY, width: chipWidth, height: chipHeight, label: chip.label, reviewed: chip.reviewed });
-      x += chipWidth + gap;
-    });
-
-    return {
-      placed,
-      height: placed.length ? rowY - startY + chipHeight : 0,
-    };
-  }
-
-  function buildSvgCardParts(criterion, x, y, width) {
-    const cardPad = 16;
-    const innerWidth = width - cardPad * 2;
-    const titleSize = 16;
-    const titleLineHeight = 22;
-    const parts = [];
-    const titleLines = wrapSvgText(`${criterion.id} ${criterion.title}`, innerWidth, titleSize);
-    let cursorY = y + cardPad;
-
-    titleLines.forEach((line, index) => {
-      if (index === 0 && line.startsWith(criterion.id)) {
-        const titleRest = line.slice(criterion.id.length).trimStart();
-        parts.push(
-          `<text x="${x + cardPad}" y="${cursorY}" font-family="${SVG_EXPORT.serif}" font-size="${titleSize}" font-weight="500" dominant-baseline="hanging">` +
-          `<tspan fill="${SVG_EXPORT.brand}">${svgEscape(criterion.id)}</tspan>` +
-          (titleRest ? `<tspan fill="${SVG_EXPORT.ink}"> ${svgEscape(titleRest)}</tspan>` : '') +
-          '</text>'
-        );
-      } else {
-        parts.push(svgText(x + cardPad, cursorY, line, { size: titleSize, weight: 500, family: SVG_EXPORT.serif }));
-      }
-      cursorY += titleLineHeight;
-    });
-
+  function renderFigmaExportCard(criterion) {
     const triggers = getMatchingTriggers(criterion);
-    const chips = triggers.map((trigger) => ({
-      label: `${isTriggerReviewed(criterion.id, trigger.value) ? '✓ ' : '○ '}${trigger.label}`,
-      reviewed: isTriggerReviewed(criterion.id, trigger.value),
-    }));
-
-    if (chips.length) {
-      cursorY += 8;
-      const chipLayout = layoutSvgChipRow(chips, x + cardPad, cursorY, innerWidth);
-      chipLayout.placed.forEach((chip) => {
-        const fill = chip.reviewed ? SVG_EXPORT.chipReviewedBg : SVG_EXPORT.chipBg;
-        const stroke = chip.reviewed ? SVG_EXPORT.chipReviewedBorder : SVG_EXPORT.border;
-        const textFill = chip.reviewed ? SVG_EXPORT.brand : SVG_EXPORT.darkWarm;
-        parts.push(svgRoundedRect(chip.x, chip.y, chip.width, chip.height, fill, stroke));
-        parts.push(svgText(chip.x + 12, chip.y + 8, chip.label, { size: 12, weight: 500, fill: textFill }));
-      });
-      cursorY += chipLayout.height;
-    }
-
-    const cardHeight = cursorY - y + cardPad;
-    return {
-      parts: [svgRoundedRect(x, y, width, cardHeight, SVG_EXPORT.bg, SVG_EXPORT.border), ...parts],
-      height: cardHeight,
-    };
+    const chips = triggers.map((t) => renderFigmaExportChip(t, isTriggerReviewed(criterion.id, t.value))).join('');
+    return `
+      <div class="figma-export-card">
+        <p class="figma-export-card-title">
+          <span class="figma-export-code">${escapeHtml(criterion.id)}</span>${escapeHtml(criterion.title)}
+        </p>
+        ${chips ? `<div class="figma-export-chips">${chips}</div>` : ''}
+      </div>
+    `;
   }
 
-  function buildExportSvg() {
+  function renderFigmaExportRoot() {
     const criteria = getGeneratedCriteria();
     const { done, total } = getReviewProgress(criteria);
     const exportedAt = formatExportTimestamp();
-    const width = SVG_EXPORT.width;
-    const pad = SVG_EXPORT.pad;
-    const contentWidth = width - pad * 2;
-    const parts = [];
-    let y = pad;
+    const roleSections = ['design', 'ddev', 'dev', 'content']
+      .map((role) => {
+        const items = criteria.filter((c) => c.role === role);
+        if (!items.length) return '';
+        return `
+          <div class="figma-export-role">
+            <p class="figma-export-role-title">${escapeHtml(ROLE_LABELS[role])}</p>
+            <div class="figma-export-cards">
+              ${items.map((criterion) => renderFigmaExportCard(criterion)).join('')}
+            </div>
+          </div>
+        `;
+      })
+      .join('');
 
-    parts.push(svgText(pad, y, `A11ySidekick — ${state.lastScreenName}`, { size: 22, weight: 500, fill: SVG_EXPORT.brand, family: SVG_EXPORT.serif }));
-    y += 30;
-    parts.push(svgText(pad, y, `${done}/${total} reviewed · WCAG 2.2 AA`, { size: 13, fill: SVG_EXPORT.stone }));
-    y += 20;
-    parts.push(svgText(pad, y, `Exported ${exportedAt}`, { size: 13, fill: SVG_EXPORT.stone }));
-    y += 24;
-    parts.push(`<line x1="${pad}" y1="${y}" x2="${width - pad}" y2="${y}" stroke="${SVG_EXPORT.border}" stroke-width="1"/>`);
-    y += 20;
+    return `
+      <div class="figma-export-frame">
+        <div class="figma-export-header">
+          <p class="figma-export-title">${escapeHtml(state.lastScreenName)}</p>
+          <p class="figma-export-meta">${done}/${total} reviewed · WCAG 2.2 AA</p>
+          <p class="figma-export-meta">Exported ${escapeHtml(exportedAt)}</p>
+        </div>
+        ${roleSections}
+        <p class="figma-export-footer">Generated by A11ySidekick</p>
+      </div>
+    `;
+  }
 
-    ['design', 'ddev', 'dev', 'content'].forEach((role) => {
-      const items = criteria.filter((c) => c.role === role);
-      if (!items.length) return;
+  function mountFigmaExportRoot() {
+    const root = document.getElementById('figma-export-root');
+    root.innerHTML = renderFigmaExportRoot();
+    return root.querySelector('.figma-export-frame');
+  }
 
-      parts.push(svgText(pad, y, ROLE_LABELS[role].toUpperCase(), { size: 11, weight: 600, fill: SVG_EXPORT.stone }));
-      y += 20;
-
-      items.forEach((criterion) => {
-        const card = buildSvgCardParts(criterion, pad, y, contentWidth);
-        parts.push(...card.parts);
-        y += card.height + 10;
-      });
-
-      y += 10;
-    });
-
-    const totalHeight = y + pad;
-    return `<?xml version="1.0" encoding="UTF-8"?>\n` +
-      `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${totalHeight}" viewBox="0 0 ${width} ${totalHeight}">` +
-      `<rect width="${width}" height="${totalHeight}" rx="8" fill="${SVG_EXPORT.bg}" stroke="${SVG_EXPORT.border}" stroke-width="1"/>` +
-      parts.join('') +
-      '</svg>';
+  function clearFigmaExportRoot() {
+    document.getElementById('figma-export-root').innerHTML = '';
   }
 
   function buildExportCsv() {
@@ -3641,6 +3676,63 @@
     }, 2500);
   }
 
+  async function copyHtmlToClipboard(html) {
+    if (!navigator.clipboard || !window.isSecureContext) {
+      throw new Error('Clipboard unavailable');
+    }
+
+    if (!html.includes('data-buffer="<!--(figma)')) {
+      throw new Error('Invalid Figma payload');
+    }
+
+    const htmlBlob = new Blob([html], { type: 'text/html' });
+    const plainBlob = new Blob([html], { type: 'text/plain' });
+    await navigator.clipboard.write([
+      new ClipboardItem({
+        'text/html': htmlBlob,
+        'text/plain': plainBlob,
+      }),
+    ]);
+  }
+
+  async function copyChecklistForFigma() {
+    if (!state.generatedIds.length) {
+      showExportToast('Generate a checklist first');
+      return;
+    }
+
+    showExportToast('Preparing Figma export…');
+
+    try {
+      const frameEl = mountFigmaExportRoot();
+      if (!frameEl) throw new Error('Export DOM missing');
+
+      await document.fonts.ready;
+      frameEl.getBoundingClientRect();
+
+      const { generateFromElement, inlineComputedStyles } = await import(
+        'https://esm.sh/@magicpatterns/html-to-figma@1.0.4'
+      );
+
+      const inlined = inlineComputedStyles(frameEl);
+      const clone = new DOMParser()
+        .parseFromString(inlined, 'text/html')
+        .body.firstElementChild;
+      if (!clone) throw new Error('Export clone missing');
+
+      const html = await generateFromElement(clone, {
+        topLayerName: state.lastScreenName,
+      });
+
+      await copyHtmlToClipboard(html);
+      showExportToast('Copied for Figma');
+    } catch {
+      showExportToast('Figma copy failed — try Download CSV');
+    } finally {
+      clearFigmaExportRoot();
+    }
+  }
+
   function downloadBlobFile(blob, filename) {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -3651,22 +3743,6 @@
     link.click();
     link.remove();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
-  }
-
-  function downloadChecklistSvg() {
-    if (!state.generatedIds.length) {
-      showExportToast('Generate a checklist first');
-      return;
-    }
-
-    try {
-      const svg = buildExportSvg();
-      const blob = new Blob([svg], { type: 'image/svg+xml;charset=utf-8' });
-      downloadBlobFile(blob, `a11y-sidekick-${slugifyScreenName(state.lastScreenName)}.svg`);
-      showExportToast('SVG downloaded');
-    } catch {
-      showExportToast('SVG export failed');
-    }
   }
 
   function downloadChecklistCsv() {
@@ -3802,7 +3878,7 @@
                 <i class="ph ph-download-simple" aria-hidden="true"></i>
               </button>
               <div class="download-menu" role="menu" hidden>
-                <button class="download-menu-item" type="button" role="menuitem" data-download="svg">Download SVG</button>
+                <button class="download-menu-item" type="button" role="menuitem" data-copy-figma>Copy for Figma</button>
                 <button class="download-menu-item" type="button" role="menuitem" data-download="csv">Download CSV</button>
               </div>
             </div>
@@ -3833,7 +3909,7 @@
 
   function renderChecklistCard(criterion) {
     const matchingTriggers = getMatchingTriggers(criterion);
-    const allReviewed = matchingTriggers.length > 0 && matchingTriggers.every((t) => isTriggerReviewed(criterion.id, t.value));
+    const allReviewed = isCriterionReviewed(criterion);
 
     const reviewChips = matchingTriggers.map((trigger) => {
       const reviewed = isTriggerReviewed(criterion.id, trigger.value);
@@ -4116,11 +4192,18 @@
       return;
     }
 
-    const downloadAction = event.target.closest('[data-download]');
-    if (downloadAction) {
+    const copyFigmaBtn = event.target.closest('[data-copy-figma]');
+    if (copyFigmaBtn) {
       event.preventDefault();
-      if (downloadAction.dataset.download === 'svg') downloadChecklistSvg();
-      if (downloadAction.dataset.download === 'csv') downloadChecklistCsv();
+      copyChecklistForFigma();
+      closeAllDownloadMenus();
+      return;
+    }
+
+    const downloadCsvBtn = event.target.closest('[data-download="csv"]');
+    if (downloadCsvBtn) {
+      event.preventDefault();
+      downloadChecklistCsv();
       closeAllDownloadMenus();
       return;
     }
